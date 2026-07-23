@@ -8,6 +8,7 @@ import availabilityRoutes from './routes/availability';
 import appointmentsRoutes from './routes/appointments';
 import patientsRoutes from './routes/patients';
 import waitlistRoutes from './routes/waitlist';
+import assistantRoutes from './routes/assistant';
 
 async function main() {
   const app = Fastify({
@@ -27,6 +28,7 @@ async function main() {
   await app.register(appointmentsRoutes);
   await app.register(patientsRoutes);
   await app.register(waitlistRoutes);
+  await app.register(assistantRoutes);
 
   const port = Number(process.env.PORT ?? 3000);
   await app.listen({ port, host: '0.0.0.0' });
