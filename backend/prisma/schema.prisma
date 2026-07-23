@@ -1,0 +1,184 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Language {
+  CZ
+  UA
+  EN
+}
+
+enum InsuranceProvider {
+  VZP
+  OZP
+  CPZP
+  RBP
+  VOZP
+  ZPS
+  ZPMV
+  NONE
+}
+
+enum AppointmentStatus {
+  PENDING_CONFIRMATION
+  CONFIRMED
+  NEEDS_CALL
+  CANCELLED
+  NO_SHOW
+  DONE
+}
+
+enum SourceChannel {
+  TELEGRAM
+  WEB
+  WHATSAPP
+  PHONE
+  ADMIN
+}
+
+enum ExceptionType {
+  CLOSED
+  OPEN_OVERRIDE
+}
+
+enum WaitlistStatus {
+  ACTIVE
+  OFFERED
+  BOOKED
+  EXPIRED
+}
+
+enum StaffRole {
+  DOCTOR
+  ASSISTANT
+}
+
+model Staff {
+  id         String    @id @default(cuid())
+  name       String
+  role       StaffRole
+  telegramId String?   @unique
+  createdAt  DateTime  @default(now())
+}
+
+model Patient {
+  id                    String    @id @default(cuid())
+  fullName              String
+  phone                 String    @unique
+  telegramId            String?   @unique
+  email                 String?
+  language              Language  @default(CZ)
+  insuranceProvider     InsuranceProvider @default(NONE)
+  consentDataProcessing Boolean   @default(false)
+  consentDataAt         DateTime?
+  consentHealthData     Boolean   @default(false)
+  consentHealthDataAt   DateTime?
+  notes                 String?
+  noShowCount           Int       @default(0)
+  createdAt             DateTime  @default(now())
+
+  appointments      Appointment[]
+  waitlistEntries   WaitlistEntry[]
+  conversationLogs  ConversationLog[]
+}
+
+model VisitType {
+  id                String   @id @default(cuid())
+  name              String
+  durationMinutes   Int
+  colorTag          String
+  isAcute           Boolean  @default(false)
+  requiresInsurance InsuranceProvider?
+  active            Boolean  @default(true)
+
+  slotTemplates    SlotTemplateVisitType[]
+  appointments     Appointment[]
+  waitlistEntries  WaitlistEntry[]
+}
+
+model SlotTemplate {
+  id                String    @id @default(cuid())
+  weekday           Int // 1=Monday .. 7=Sunday (ISO)
+  timeStart         String // "07:00"
+  timeEnd           String // "09:00"
+  slotLengthMinutes Int
+  capacityPerSlot   Int       @default(1)
+  activeFrom        DateTime  @default(now())
+  activeUntil       DateTime?
+  createdAt         DateTime  @default(now())
+
+  visitTypes SlotTemplateVisitType[]
+}
+
+model SlotTemplateVisitType {
+  slotTemplate   SlotTemplate @relation(fields: [slotTemplateId], references: [id], onDelete: Cascade)
+  slotTemplateId String
+  visitType      VisitType    @relation(fields: [visitTypeId], references: [id], onDelete: Cascade)
+  visitTypeId    String
+
+  @@id([slotTemplateId, visitTypeId])
+}
+
+model SlotException {
+  id        String        @id @default(cuid())
+  date      DateTime // calendar date, time part ignored
+  timeStart String
+  timeEnd   String
+  type      ExceptionType
+  reason    String?
+  createdBy String?
+  createdAt DateTime      @default(now())
+
+  @@index([date])
+}
+
+model Appointment {
+  id          String            @id @default(cuid())
+  patient     Patient           @relation(fields: [patientId], references: [id])
+  patientId   String
+  visitType   VisitType         @relation(fields: [visitTypeId], references: [id])
+  visitTypeId String
+  date        DateTime // calendar date, time part ignored
+  timeStart   String
+  timeEnd     String
+  status      AppointmentStatus @default(PENDING_CONFIRMATION)
+  isAcute     Boolean           @default(false)
+  sourceChannel SourceChannel
+
+  triageAnswers     Json?
+  photoRefs         Json?
+  createdAt         DateTime  @default(now())
+  confirmedAt       DateTime?
+  reminder24hSentAt DateTime?
+  reminder2hSentAt  DateTime?
+
+  @@index([date])
+  @@index([patientId])
+}
+
+model WaitlistEntry {
+  id               String         @id @default(cuid())
+  patient          Patient        @relation(fields: [patientId], references: [id])
+  patientId        String
+  visitType        VisitType      @relation(fields: [visitTypeId], references: [id])
+  visitTypeId      String
+  desiredDateFrom  DateTime
+  desiredDateUntil DateTime
+  status           WaitlistStatus @default(ACTIVE)
+  createdAt        DateTime       @default(now())
+}
+
+model ConversationLog {
+  id             String        @id @default(cuid())
+  patient        Patient?      @relation(fields: [patientId], references: [id])
+  patientId      String?
+  channel        SourceChannel
+  rawMessages    Json
+  resolvedAction String?
+  createdAt      DateTime      @default(now())
+}
