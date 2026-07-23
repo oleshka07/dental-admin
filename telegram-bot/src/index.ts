@@ -8,6 +8,7 @@ if (!BOT_TOKEN) {
   throw new Error('BOT_TOKEN is not set (see telegram-bot/.env.example)');
 }
 const STAFF_CHAT_ID = process.env.STAFF_CHAT_ID;
+const WEBAPP_URL = process.env.WEBAPP_URL;
 
 const bot = new Telegraf(BOT_TOKEN);
 
@@ -50,7 +51,13 @@ function formatSlotLabel(slot: AvailableSlot, lang: Lang): string {
 }
 
 function mainMenuKeyboard(lang: Lang) {
+  const appButtonLabel = lang === 'UA' ? '📱 Відкрити застосунок' : '📱 Otevřít aplikaci';
   return Markup.inlineKeyboard([
+    // The Mini App reproduces this whole flow with a richer, native UI
+    // (no retyping name/phone every time, native date picker feel, etc.) —
+    // offer it first, but keep the classic inline flow working below for
+    // Telegram clients that don't support Mini Apps.
+    ...(WEBAPP_URL ? [[Markup.button.webApp(appButtonLabel, WEBAPP_URL)]] : []),
     [Markup.button.callback(t('menuBook', lang), 'menu:book')],
     [Markup.button.callback(t('menuAcute', lang), 'menu:acute')],
     [Markup.button.callback(t('menuMy', lang), 'menu:my')],
@@ -266,7 +273,16 @@ bot.on('text', async (ctx) => {
   await sendMainMenu(ctx, session);
 });
 
-bot.launch().then(() => console.log('Telegram bot started'));
+bot.launch().then(async () => {
+  console.log('Telegram bot started');
+  if (WEBAPP_URL) {
+    // Sets Telegram's persistent menu button (bottom-left of the chat input)
+    // to open the Mini App directly, in addition to the inline button above.
+    await bot.telegram.setChatMenuButton({
+      menuButton: { type: 'web_app', text: 'Objednat se', web_app: { url: WEBAPP_URL } },
+    });
+  }
+});
 
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));

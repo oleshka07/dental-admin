@@ -9,11 +9,18 @@ const CLINIC_FACTS = {
   name: 'Galactic Dent',
   address: 'Dr. Přemysla Jeřábka 1093/13, Rybáře, 360 05 Karlovy Vary',
   ico: '23647124',
-  hours: 'Po–Čt 8:00–17:00, Pá 8:00–14:00',
+  hours: { CZ: 'Po–Čt 8:00–17:00, Pá 8:00–14:00', UA: 'Пн–Чт 8:00–17:00, Пт 8:00–14:00' },
   phone: '+420 XXX XXX XXX',
-  insurance: 'VZP, OZP, ZP MV ČR a další — dle aktuálních smluv kliniky',
+  insurance: {
+    CZ: 'VZP, OZP, ZP MV ČR a další — dle aktuálních smluv kliniky',
+    UA: 'VZP, OZP, ZP MV ČR та інші — згідно з чинними договорами клініки',
+  },
   founder: 'MDDr. Dmytro Galaktionov, člen České stomatologické komory (ČSK)',
 };
+
+function factsLang(language: string): 'CZ' | 'UA' {
+  return language === 'UA' ? 'UA' : 'CZ';
+}
 
 const PAGE_HINTS: Record<string, string> = {
   home: 'Pacient je na úvodní stránce — pravděpodobně hledá obecné informace nebo se chce objednat.',
@@ -28,6 +35,7 @@ const bodySchema = z.object({
   message: z.string().min(1).max(2000),
   page: z.enum(['home', 'services', 'about', 'founder', 'contact']).default('home'),
   language: z.enum(['CZ', 'UA', 'EN']).default('CZ'),
+  channel: z.enum(['WEB', 'TELEGRAM']).default('WEB'),
   history: z
     .array(z.object({ role: z.enum(['user', 'assistant']), content: z.string() }))
     .max(12)
@@ -41,13 +49,14 @@ interface AssistantResult {
 
 function buildSystemPrompt(page: string, language: string): string {
   const langName = { CZ: 'čeština', UA: 'українська', EN: 'English' }[language] ?? 'čeština';
+  const facts = factsLang(language);
   return `Jsi asistent webu zubní kliniky ${CLINIC_FACTS.name} v Karlových Varech.
 Fakta, která smíš používat (nic jiného si nevymýšlej):
 - Adresa: ${CLINIC_FACTS.address}
 - IČO: ${CLINIC_FACTS.ico}
-- Ordinační hodiny: ${CLINIC_FACTS.hours}
+- Ordinační hodiny: ${CLINIC_FACTS.hours[facts]}
 - Telefon: ${CLINIC_FACTS.phone}
-- Pojišťovny: ${CLINIC_FACTS.insurance}
+- Pojišťovny: ${CLINIC_FACTS.insurance[facts]}
 - Zakladatel: ${CLINIC_FACTS.founder}
 
 ${PAGE_HINTS[page] ?? ''}
@@ -55,7 +64,7 @@ ${PAGE_HINTS[page] ?? ''}
 Pravidla (nesmí být porušena):
 1. Nikdy nestanovuj diagnózu ani nedávej lékařská doporučení k léčbě. Pokud se pacient ptá na bolest nebo příznaky, projev empatii a nasměruj ho k objednání (u akutní bolesti k naléhavému objednání), ale symptomy nehodnoť medicínsky.
 2. Pokud pacient chce se objednat, přeobjednat nebo zeptat na volný termín, jasně to řekni a doporuč tlačítko rezervace.
-3. Pokud pacient popisuje akutní/silnou bolest, otok nebo úraz, doporuč urgentní objednání nebo přímý telefonát klinice.
+3. Pokud pacient popisuje akutní/silnou bolest, otok nebo úraz, doporuč urgentní objednání nebo přímý telefonát do ordinace.
 4. Odpovídej stručně (2-4 věty), vždy v jazyce: ${langName}.
 5. Neznáš-li odpověď na základě uvedených faktů, řekni to a nasměruj na telefonní kontakt kliniky.`;
 }
@@ -106,28 +115,39 @@ function detectAction(message: string): AssistantResult['action'] {
 function ruleBasedFallback(message: string, page: string, language: string): AssistantResult {
   const text = message.toLowerCase();
   const action = detectAction(message);
+  const lang = factsLang(language);
+  const hours = CLINIC_FACTS.hours[lang];
+  const insurance = CLINIC_FACTS.insurance[lang];
 
   const replies: Record<string, string> = {
     CZ_acute:
       'Je nám líto, že vás bolí zub. Doporučuji objednat se přes tlačítko "Akutní bolest" níže — najdeme nejbližší volný termín, nebo vás bude kontaktovat naše asistentka. Při silné bolesti nebo otoku volejte prosím přímo do ordinace.',
-    CZ_booking: `Rádi vás objednáme. Klikněte na tlačítko "Objednat se" a vyberte typ návštěvy a volný termín. Ordinujeme ${CLINIC_FACTS.hours}.`,
-    CZ_address: `Naše ordinace se nachází na adrese ${CLINIC_FACTS.address}. Ordinační hodiny: ${CLINIC_FACTS.hours}.`,
-    CZ_insurance: `Spolupracujeme s pojišťovnami: ${CLINIC_FACTS.insurance}. Konkrétní pokrytí výkonu vám rádi upřesníme na místě nebo telefonicky.`,
+    CZ_booking: `Rádi vás objednáme. Klikněte na tlačítko "Objednat se" a vyberte typ návštěvy a volný termín. Ordinujeme ${hours}.`,
+    CZ_address: `Naše ordinace se nachází na adrese ${CLINIC_FACTS.address}. Ordinační hodiny: ${hours}.`,
+    CZ_insurance: `Spolupracujeme s pojišťovnami: ${insurance}. Konkrétní pokrytí výkonu vám rádi upřesníme na místě nebo telefonicky.`,
     CZ_default:
-      'Děkuji za dotaz. Pro přesnou odpověď doporučuji objednání na konzultaci, nebo nám zavolejte. Mohu vám rovnou pomoct s objednáním?',
+      'Děkuji za dotaz. Pro přesnou odpověď doporučuji objednat se na konzultaci, nebo nám zavolejte. Mohu vám rovnou pomoct s objednáním?',
     UA_acute:
-      'Шкода, що болить зуб. Рекомендую записатись через кнопку "Гострий біль" нижче — знайдемо найближчий вільний час, або з вами зв\'яжеться асистентка. При сильному болю чи набряку зателефонуйте напряму в клініку.',
-    UA_booking: `Радо запишемо вас на прийом. Натисніть "Записатися" і оберіть тип візиту та вільний час. Працюємо: ${CLINIC_FACTS.hours}.`,
-    UA_address: `Наша клініка знаходиться за адресою ${CLINIC_FACTS.address}. Години роботи: ${CLINIC_FACTS.hours}.`,
-    UA_insurance: `Ми співпрацюємо зі страховими: ${CLINIC_FACTS.insurance}. Точне покриття уточнимо на місці або телефоном.`,
-    UA_default: 'Дякую за запитання. Для точної відповіді радимо записатись на консультацію, або зателефонуйте нам. Допомогти із записом?',
+      'Шкода, що болить зуб. Рекомендую записатися через кнопку "Гострий біль" нижче — знайдемо найближчий вільний час, або з вами зв\'яжеться асистентка. При сильному болю чи набряку зателефонуйте, будь ласка, напряму в клініку.',
+    UA_booking: `Радо запишемо вас на прийом. Натисніть "Записатися" і оберіть тип візиту та вільний час. Працюємо: ${hours}.`,
+    UA_address: `Наша клініка знаходиться за адресою ${CLINIC_FACTS.address}. Години роботи: ${hours}.`,
+    UA_insurance: `Ми співпрацюємо зі страховими компаніями: ${insurance}. Точне покриття уточнимо на місці або телефоном.`,
+    UA_default: 'Дякую за запитання. Для точної відповіді радимо записатися на консультацію або зателефонувати нам. Допомогти із записом?',
   };
 
-  const lang = language === 'UA' ? 'UA' : 'CZ';
   let key = `${lang}_default`;
   if (action === 'open_acute_booking') key = `${lang}_acute`;
   else if (action === 'open_booking') key = `${lang}_booking`;
-  else if (text.includes('adres') || text.includes('kde') || text.includes('адрес') || text.includes('де')) key = `${lang}_address`;
+  else if (
+    text.includes('adres') ||
+    text.includes('kde') ||
+    text.includes('hodin') ||
+    text.includes('otevírac') ||
+    text.includes('адрес') ||
+    text.includes('де') ||
+    text.includes('годин')
+  )
+    key = `${lang}_address`;
   else if (text.includes('pojišť') || text.includes('vzp') || text.includes('страхов')) key = `${lang}_insurance`;
 
   return { reply: replies[key], action };
@@ -144,7 +164,7 @@ export default async function assistantRoutes(app: FastifyInstance) {
 
     await prisma.conversationLog.create({
       data: {
-        channel: 'WEB',
+        channel: body.channel,
         rawMessages: { sessionId: body.sessionId, page: body.page, message: body.message, reply: result.reply },
         resolvedAction: result.action ?? 'ANSWERED',
       },

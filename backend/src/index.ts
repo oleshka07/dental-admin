@@ -9,6 +9,7 @@ import appointmentsRoutes from './routes/appointments';
 import patientsRoutes from './routes/patients';
 import waitlistRoutes from './routes/waitlist';
 import assistantRoutes from './routes/assistant';
+import telegramAppRoutes from './routes/telegramApp';
 
 async function main() {
   const app = Fastify({
@@ -29,6 +30,7 @@ async function main() {
   await app.register(patientsRoutes);
   await app.register(waitlistRoutes);
   await app.register(assistantRoutes);
+  await app.register(telegramAppRoutes);
 
   const port = Number(process.env.PORT ?? 3000);
   await app.listen({ port, host: '0.0.0.0' });

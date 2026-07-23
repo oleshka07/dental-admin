@@ -39,7 +39,7 @@ export default function HomePage() {
           </div>
           <div className="card">
             <h3>🤝 Lidský přístup</h3>
-            <p>Čas na vysvětlení, klid pro pacienta a podpora i pro ty, kdo měnili lékaře.</p>
+            <p>Čas na vysvětlení, klid pro pacienta a podpora i pro ty, kdo měnil lékaře.</p>
           </div>
           <div className="card">
             <h3>⚡ Protetika do 24 hodin</h3>

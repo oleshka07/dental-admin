@@ -70,7 +70,7 @@ export const SERVICES: ServiceItem[] = [
   {
     slug: 'protetika',
     name: 'Protetika a implantologie',
-    description: 'Korunky, můstky, exprese protetika do 24 hodin díky vlastní laboratoři, implantáty.',
+    description: 'Korunky, můstky, expresní protetika do 24 hodin díky vlastní laboratoři, implantáty.',
     insuranceKids: '—',
     insuranceAdults: 'Základní plastová korunka 1× za 4 roky, nadstandard a implantáty samoplátcem',
   },
@@ -87,7 +87,7 @@ export const SOKOLOV_BRIDGE = {
   heading: 'Pro pacienty ze Sokolova',
   text: `Pokud jste byli dosud pacienty MDDr. Galaktionova v ordinaci Léčebně preventivní
   zařízení s.r.o. v Sokolově, pokračujeme ve stejné péči v nové klinice Galactic Dent
-  v Karlových Varech — jen pár minut jízdy od Sokolova. Vaše dosavadní vztah s lékařem
+  v Karlových Varech — jen pár minut jízdy od Sokolova. Váš dosavadní vztah s lékařem
   i jeho přístup k léčbě zůstávají stejné.`,
 };
 

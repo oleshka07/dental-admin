@@ -1,0 +1,207 @@
+:root {
+  --tg-bg: #f4f9fb;
+  --tg-text: #142433;
+  --tg-hint: #5b6b78;
+  --tg-link: #0d3a63;
+  --tg-button: #0d3a63;
+  --tg-button-text: #ffffff;
+  --tg-secondary-bg: #ffffff;
+  --teal: #2dd4c8;
+  --acute-red: #e5484d;
+  --border: #e2ebef;
+  --radius: 14px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--tg-bg);
+  color: var(--tg-text);
+  padding-bottom: 84px; /* leave room for Telegram's MainButton */
+}
+
+.screen {
+  min-height: 100vh;
+  padding: 20px 16px calc(20px + env(safe-area-inset-bottom));
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.app-header img {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+}
+
+.app-header h1 {
+  font-size: 17px;
+  margin: 0;
+}
+
+h2.screen-title {
+  font-size: 20px;
+  margin: 0 0 6px;
+}
+
+p.screen-subtitle {
+  color: var(--tg-hint);
+  font-size: 14px;
+  margin: 0 0 20px;
+}
+
+.tg-card {
+  background: var(--tg-secondary-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.tg-list-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: var(--tg-secondary-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  font-size: 15px;
+  color: var(--tg-text);
+  cursor: pointer;
+}
+
+.tg-list-item:active {
+  background: var(--tg-bg);
+}
+
+.tg-list-item .tg-list-item-sub {
+  color: var(--tg-hint);
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.menu-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.menu-tile {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--tg-secondary-bg);
+  cursor: pointer;
+  text-align: left;
+}
+
+.menu-tile.acute {
+  border-color: var(--acute-red);
+  background: rgba(229, 72, 77, 0.06);
+}
+
+.menu-tile .icon {
+  font-size: 26px;
+}
+
+.menu-tile .title {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.menu-tile .sub {
+  color: var(--tg-hint);
+  font-size: 13px;
+}
+
+.tg-input,
+.tg-select,
+.tg-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 15px;
+  margin-bottom: 10px;
+  font-family: inherit;
+  background: var(--tg-secondary-bg);
+  color: var(--tg-text);
+}
+
+.tg-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--tg-hint);
+  margin: 10px 0 4px;
+}
+
+.tg-consent input {
+  margin-top: 3px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.status-CONFIRMED { background: #c8e6c9; color: #245b28; }
+.status-PENDING_CONFIRMATION { background: #fff9c4; color: #7a6a00; }
+.status-NEEDS_CALL { background: #ffcdd2; color: #8c1c22; }
+.status-CANCELLED { background: #eeeeee; color: #777; }
+.status-NO_SHOW { background: #cfd8dc; color: #37474f; }
+.status-DONE { background: #e1f5fe; color: #01579b; }
+
+.acute-banner {
+  background: rgba(229, 72, 77, 0.1);
+  color: var(--acute-red);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-weight: 700;
+  font-size: 13px;
+  display: inline-block;
+  margin-bottom: 14px;
+}
+
+.center-state {
+  text-align: center;
+  padding-top: 60px;
+}
+
+.center-state .emoji {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.error-text {
+  color: var(--acute-red);
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+.spinner-text {
+  color: var(--tg-hint);
+  text-align: center;
+  padding-top: 40px;
+}

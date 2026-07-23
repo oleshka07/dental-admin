@@ -182,7 +182,7 @@ export default function BookingWidget() {
             </div>
             {slots.length === 0 && (
               <button className="widget-primary" onClick={() => setStep('details')}>
-                Nechat mi zavolat
+                Nechat si zavolat
               </button>
             )}
           </>
@@ -213,7 +213,7 @@ export default function BookingWidget() {
         {step === 'done' && (
           <>
             <h3>Návštěva byla zarezervována ✅</h3>
-            <p>Těšíme se na vás! Potvrzení najdete brzy i v SMS/telefonicky.</p>
+            <p>Těšíme se na vás! Potvrzení obdržíte brzy SMS zprávou, případně vás budeme kontaktovat telefonicky.</p>
             <button className="widget-primary" onClick={reset}>
               Zavřít
             </button>
