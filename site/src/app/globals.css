@@ -577,3 +577,225 @@ table.price-table tr:last-child td {
   color: var(--acute-red);
   font-size: 13px;
 }
+
+/* ==========================================================================
+   Mobile app shell — bottom tab bar, action sheet, safe areas.
+   Desktop keeps the classic top header; below the breakpoint the site
+   behaves like a native app: slim top bar, fixed bottom tab bar, bottom
+   sheets instead of centered dialogs.
+   ========================================================================== */
+
+:root {
+  --tab-bar-height: 58px;
+}
+
+.footer-links {
+  display: none;
+}
+
+@media (max-width: 860px) {
+  body {
+    padding-bottom: calc(var(--tab-bar-height) + env(safe-area-inset-bottom));
+  }
+
+  /* The tab bar now owns navigation + the primary booking action, so the
+     desktop header collapses to a plain logo bar — no links, no CTA. */
+  .site-header-inner {
+    padding: 8px 16px;
+  }
+
+  .header-actions {
+    display: none;
+  }
+
+  .footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    padding: 16px 20px 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--navy);
+  }
+
+  /* Floating chat + book/acute buttons would collide with the tab bar on
+     mobile — the tab bar's elevated center button covers booking, so hide
+     the separate floating actions and just lift the chat bubble clear. */
+  .floating-actions {
+    display: none;
+  }
+
+  .chat-bubble {
+    bottom: calc(var(--tab-bar-height) + 16px + env(safe-area-inset-bottom));
+  }
+
+  .chat-panel {
+    bottom: calc(var(--tab-bar-height) + 16px + env(safe-area-inset-bottom));
+    height: min(60vh, 460px);
+  }
+
+  /* Booking widget becomes an iOS-style bottom sheet instead of a centered
+     dialog — full-width, rounded only at the top, slides up from the edge. */
+  .widget-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .widget-panel {
+    width: 100%;
+    max-width: none;
+    border-radius: 20px 20px 0 0;
+    max-height: 85vh;
+    padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
+    animation: sheet-up 0.25s ease-out;
+  }
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.tab-bar {
+  display: none;
+}
+
+@media (max-width: 860px) {
+  .tab-bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 80;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-around;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(14px);
+    border-top: 1px solid var(--border);
+    padding: 8px 4px calc(6px + env(safe-area-inset-bottom));
+    height: calc(var(--tab-bar-height) + env(safe-area-inset-bottom));
+  }
+}
+
+.tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  color: var(--text-muted);
+  font-size: 10.5px;
+  font-weight: 600;
+  flex: 1;
+  padding-top: 2px;
+}
+
+.tab-item.active {
+  color: var(--navy);
+}
+
+.tab-bar-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  border: none;
+  background: none;
+  flex: 1;
+  color: var(--navy);
+  font-size: 10.5px;
+  font-weight: 700;
+  margin-top: -22px;
+}
+
+.tab-bar-center-button {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--navy), var(--teal));
+  color: white;
+  box-shadow: 0 8px 18px rgba(13, 58, 99, 0.35);
+  border: 3px solid var(--bg);
+}
+
+/* ---------- Action sheet ---------- */
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 40, 70, 0.4);
+  z-index: 110;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.sheet-container {
+  width: 100%;
+  max-width: 480px;
+  padding: 0 10px calc(10px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: sheet-up 0.22s ease-out;
+}
+
+.sheet-card {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.sheet-title {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sheet-option {
+  display: block;
+  width: 100%;
+  border: none;
+  background: none;
+  padding: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+
+.sheet-option:last-child {
+  border-bottom: none;
+}
+
+.sheet-option-accent {
+  color: var(--navy);
+}
+
+.sheet-option-destructive {
+  color: var(--acute-red);
+}
+
+.sheet-cancel {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
+  border: none;
+  border-radius: 16px;
+  padding: 16px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--navy);
+  cursor: pointer;
+}
