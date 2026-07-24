@@ -22,11 +22,13 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Build backend
+      - name: Build and test backend
         working-directory: backend
         run: |
           npm ci
           npm run build
+          # Blocks the deploy if Mini App signature verification regresses.
+          npm test
 
       - name: Build telegram-bot
         working-directory: telegram-bot
@@ -111,26 +113,27 @@ jobs:
              STAFF_CHAT_ID='${{ secrets.STAFF_CHAT_ID }}' \
              bash /opt/galactic-dent/deploy/remote-deploy.sh"
 
-      - name: Fetch recent verifyInitData diagnostic logs
-        if: always()
-        run: |
-          ssh -i ~/.ssh/deploy_key -o ConnectTimeout=15 -o ServerAliveInterval=15 -o ServerAliveCountMax=3 \
-            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
-            "journalctl -u galactic-backend --since '-2 hours' --no-pager | grep -A5 '\[verifyInitData\]' | tail -n 200" || true
-
       - name: Clean up SSH key
         if: always()
         run: rm -f ~/.ssh/deploy_key
 
-      - name: External reachability check (from the public internet, not loopback)
-        if: always()
+      # A 200 only proves nginx answered — it does not prove the rsync landed.
+      # Assert on a string that only exists in the current build so a silently
+      # stale deploy fails here instead of looking healthy.
+      - name: External reachability + freshness check
         run: |
-          echo "--- default curl UA ---"
-          curl -s -o /dev/null -w 'default UA -> %{http_code}\n' "https://${{ env.DOMAIN }}/" || true
-          echo "--- browser-like UA ---"
-          curl -s -o /dev/null -w 'browser UA -> %{http_code}\n' \
+          HTML=$(curl -sS \
             -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36" \
-            "https://${{ env.DOMAIN }}/" || true
+            -w '\nHTTP_CODE:%{http_code}' "https://${{ env.DOMAIN }}/")
+          CODE=${HTML##*HTTP_CODE:}
+          echo "homepage -> $CODE"
+          [ "$CODE" = "200" ] || { echo "Homepage is not serving 200."; exit 1; }
+          for NEEDLE in 'tel:+420352308111' 'Jak probíhá první návštěva'; do
+            case "$HTML" in
+              *"$NEEDLE"*) echo "found: $NEEDLE" ;;
+              *) echo "MISSING from the served page: $NEEDLE — the server is running an older build."; exit 1 ;;
+            esac
+          done
 
       # End-to-end guard against the exact regression that broke the Mini App:
       # the payload is signed the way real Telegram signs it — `signature` is a
