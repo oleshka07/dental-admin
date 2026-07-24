@@ -5,7 +5,14 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     ...init,
     headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
   });
-  if (!res.ok && res.status !== 400 && res.status !== 401 && res.status !== 403 && res.status !== 409) {
+  // 400/403/409 are intentionally not thrown here — several call sites
+  // (createAppointment, createUrgentRequest, cancelAppointment) expect an
+  // `{ error: string }` body back for those and check `'error' in result`.
+  // 401 (invalid Telegram session) is never consumed that way anywhere, so
+  // it must always throw — otherwise the error body silently flows through
+  // as if it were real data (e.g. a Patient missing `fullName`), crashing
+  // whatever screen renders it next.
+  if (!res.ok && res.status !== 400 && res.status !== 403 && res.status !== 409) {
     throw new Error(`API ${path} failed: ${res.status} ${await res.text().catch(() => '')}`);
   }
   return res.json() as Promise<T>;
