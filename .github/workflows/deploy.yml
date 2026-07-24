@@ -37,7 +37,10 @@ jobs:
       - name: Build site (Next.js static export)
         working-directory: site
         env:
-          NEXT_PUBLIC_BACKEND_URL: https://${{ env.DOMAIN }}/api
+          # Every client-side request path already starts with /api/ (e.g.
+          # request('/api/visit-types')) — this must be the bare origin, not
+          # .../api, or every request 404s as /api/api/... in production.
+          NEXT_PUBLIC_BACKEND_URL: https://${{ env.DOMAIN }}
         run: |
           npm ci
           npm run build
@@ -45,7 +48,7 @@ jobs:
       - name: Build admin-web
         working-directory: admin-web
         env:
-          VITE_BACKEND_URL: https://${{ env.DOMAIN }}/api
+          VITE_BACKEND_URL: https://${{ env.DOMAIN }}
         run: |
           npm ci
           npm run build
@@ -53,7 +56,7 @@ jobs:
       - name: Build telegram-app
         working-directory: telegram-app
         env:
-          VITE_BACKEND_URL: https://${{ env.DOMAIN }}/api
+          VITE_BACKEND_URL: https://${{ env.DOMAIN }}
         run: |
           npm ci
           npm run build
