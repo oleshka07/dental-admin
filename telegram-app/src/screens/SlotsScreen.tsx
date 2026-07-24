@@ -30,9 +30,14 @@ export default function SlotsScreen({
     setLoading(true);
     const from = new Date();
     const to = new Date(Date.now() + (acute ? 3 : 21) * 24 * 60 * 60 * 1000);
-    const found = await api.getAvailability(visitType.id, from.toISOString(), to.toISOString());
-    setSlots(found.slice(0, 10));
-    setLoading(false);
+    try {
+      const found = await api.getAvailability(visitType.id, from.toISOString(), to.toISOString());
+      setSlots(found.slice(0, 10));
+    } catch {
+      setError('Termíny se nepodařilo načíst. Zkuste to prosím znovu.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -43,28 +48,40 @@ export default function SlotsScreen({
   async function book(slot: AvailableSlot) {
     setBooking(true);
     setError('');
-    const result = await api.createAppointment({
-      initData,
-      visitTypeId: visitType.id,
-      date: slot.date,
-      timeStart: slot.timeStart,
-      timeEnd: slot.timeEnd,
-      isAcute: acute,
-      triageAnswers: acute ? { description: symptom } : undefined,
-    });
-    if ('error' in result) {
-      setError('Tento termín byl právě obsazen. Zkuste prosím jiný.');
+    try {
+      const result = await api.createAppointment({
+        initData,
+        visitTypeId: visitType.id,
+        date: slot.date,
+        timeStart: slot.timeStart,
+        timeEnd: slot.timeEnd,
+        isAcute: acute,
+        triageAnswers: acute ? { description: symptom } : undefined,
+      });
+      if ('error' in result) {
+        setError('Tento termín byl právě obsazen. Zkuste prosím jiný.');
+        setBooking(false);
+        load();
+        return;
+      }
+      onBooked(result);
+    } catch {
+      // Without this the button would stay stuck on "Rezervuji…" forever.
+      setError('Rezervaci se nepodařilo dokončit. Zkuste to prosím znovu.');
       setBooking(false);
-      load();
-      return;
     }
-    onBooked(result);
   }
 
   async function requestCallback() {
     setBooking(true);
-    await api.createUrgentRequest({ initData, visitTypeId: visitType.id, triageAnswers: { description: symptom } });
-    onEscalated();
+    setError('');
+    try {
+      await api.createUrgentRequest({ initData, visitTypeId: visitType.id, triageAnswers: { description: symptom } });
+      onEscalated();
+    } catch {
+      setError('Požadavek se nepodařilo odeslat. Zkuste to prosím znovu.');
+      setBooking(false);
+    }
   }
 
   useMainButton({

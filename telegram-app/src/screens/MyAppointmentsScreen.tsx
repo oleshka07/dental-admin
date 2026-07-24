@@ -15,12 +15,18 @@ const CANCELLABLE = ['CONFIRMED', 'PENDING_CONFIRMATION'];
 export default function MyAppointmentsScreen({ initData }: { initData: string }) {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   async function load() {
     setLoading(true);
-    const list = await api.myAppointments(initData);
-    setAppointments(list);
-    setLoading(false);
+    setError('');
+    try {
+      setAppointments(await api.myAppointments(initData));
+    } catch {
+      setError('Návštěvy se nepodařilo načíst. Zkuste to prosím znovu.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -29,7 +35,12 @@ export default function MyAppointmentsScreen({ initData }: { initData: string })
   }, []);
 
   async function cancel(id: string) {
-    await api.cancelAppointment(id, initData);
+    try {
+      await api.cancelAppointment(id, initData);
+    } catch {
+      setError('Návštěvu se nepodařilo zrušit. Zkuste to prosím znovu.');
+      return;
+    }
     load();
   }
 
@@ -38,7 +49,8 @@ export default function MyAppointmentsScreen({ initData }: { initData: string })
       <h2 className="screen-title">Moje návštěvy</h2>
 
       {loading && <p className="spinner-text">Načítám…</p>}
-      {!loading && appointments.length === 0 && <p>Nemáte žádné návštěvy.</p>}
+      {error && <p className="error-text">{error}</p>}
+      {!loading && !error && appointments.length === 0 && <p>Nemáte žádné návštěvy.</p>}
 
       {appointments.map((a) => (
         <div key={a.id} className="tg-card">

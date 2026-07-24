@@ -1,18 +1,20 @@
 const BASE_URL = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:3000';
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+/**
+ * Any non-ok response throws by default. Tolerating one has to be opt-in via
+ * `expectedErrors`, because a tolerated `{ error: string }` body is returned
+ * to the caller *typed as the success shape* — if that caller doesn't actually
+ * branch on it, the error object flows onward pretending to be real data and
+ * crashes whatever renders it next (this is what turned an invalid session
+ * into a blank white screen: `patient.fullName.split(...)` on `{error:'…'}`).
+ */
+async function request<T>(path: string, init?: RequestInit & { expectedErrors?: number[] }): Promise<T> {
+  const { expectedErrors, ...fetchInit } = init ?? {};
   const res = await fetch(`${BASE_URL}${path}`, {
-    ...init,
+    ...fetchInit,
     headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
   });
-  // 400/403/409 are intentionally not thrown here — several call sites
-  // (createAppointment, createUrgentRequest, cancelAppointment) expect an
-  // `{ error: string }` body back for those and check `'error' in result`.
-  // 401 (invalid Telegram session) is never consumed that way anywhere, so
-  // it must always throw — otherwise the error body silently flows through
-  // as if it were real data (e.g. a Patient missing `fullName`), crashing
-  // whatever screen renders it next.
-  if (!res.ok && res.status !== 400 && res.status !== 403 && res.status !== 409) {
+  if (!res.ok && !expectedErrors?.includes(res.status)) {
     throw new Error(`API ${path} failed: ${res.status} ${await res.text().catch(() => '')}`);
   }
   return res.json() as Promise<T>;
@@ -84,16 +86,19 @@ export const api = {
     isAcute?: boolean;
     triageAnswers?: Record<string, unknown>;
   }) =>
+    // 409 = the slot was taken between loading it and booking it; 400 = the
+    // patient record vanished. SlotsScreen branches on `'error' in result`.
     request<Appointment | { error: string }>('/api/telegram-app/appointments', {
       method: 'POST',
       body: JSON.stringify(data),
+      expectedErrors: [400, 409],
     }),
 
   createUrgentRequest: (data: { initData: string; visitTypeId: string; triageAnswers?: Record<string, unknown> }) =>
     request<Appointment>('/api/telegram-app/urgent', { method: 'POST', body: JSON.stringify(data) }),
 
   cancelAppointment: (id: string, initData: string) =>
-    request<Appointment | { error: string }>(`/api/telegram-app/appointments/${id}/cancel`, {
+    request<Appointment>(`/api/telegram-app/appointments/${id}/cancel`, {
       method: 'PATCH',
       body: JSON.stringify({ initData }),
     }),
