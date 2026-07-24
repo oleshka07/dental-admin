@@ -118,5 +118,15 @@ export function verifyInitData(initData: string, botToken: string): VerifiedInit
     }
   }
 
+  // Neither decoding reproduced Telegram's signature. Record just enough to
+  // tell the known failure modes apart on a real device — no token, no hash,
+  // no user data, so this is safe to leave enabled in production.
+  console.error('[verifyInitData] signature mismatch', {
+    fieldKeys: signed.map(([key]) => key),
+    containedLiteralPlus: signed.some(([, value]) => value.includes('+')),
+    botTokenHadSurroundingWhitespace: botToken !== botToken.trim(),
+    botTokenLength: token.length,
+  });
+
   return null;
 }
