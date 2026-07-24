@@ -29,6 +29,9 @@ export function verifyInitData(initData: string, botToken: string): VerifiedInit
   const hash = params.get('hash');
   if (!hash || !/^[0-9a-f]{64}$/i.test(hash)) return null;
   params.delete('hash');
+  // Newer clients also send `signature` (Ed25519, third-party verification) —
+  // it's never part of the HMAC data-check-string, same as `hash` itself.
+  params.delete('signature');
 
   const dataCheckString = Array.from(params.entries())
     .sort(([a], [b]) => a.localeCompare(b))

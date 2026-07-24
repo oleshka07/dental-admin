@@ -37,5 +37,11 @@ const dataCheckString = Object.keys(params)
 const secretKey = crypto.createHmac('sha256', 'WebAppData').update(botToken).digest();
 const hash = crypto.createHmac('sha256', secretKey).update(dataCheckString).digest('hex');
 
-const initData = new URLSearchParams({ ...params, hash }).toString();
+// Real Telegram also appends a `signature` field (Ed25519, for third-party
+// verification) that is NOT part of the HMAC data-check-string — included
+// here so this generator actually exercises that exclusion, which is what
+// broke real-world verification until telegramAuth.ts deleted it too.
+const signature = crypto.randomBytes(64).toString('base64url');
+
+const initData = new URLSearchParams({ ...params, hash, signature }).toString();
 console.log(initData);
