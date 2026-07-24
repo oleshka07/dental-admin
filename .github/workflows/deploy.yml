@@ -66,13 +66,16 @@ jobs:
           ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
 
       - name: Ensure remote app directory exists
+        timeout-minutes: 2
         run: |
-          ssh -i ~/.ssh/deploy_key "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+          ssh -i ~/.ssh/deploy_key -o ConnectTimeout=15 -o ServerAliveInterval=15 -o ServerAliveCountMax=3 \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
             "mkdir -p /opt/galactic-dent/backend /opt/galactic-dent/telegram-bot /opt/galactic-dent/site /opt/galactic-dent/admin-web /opt/galactic-dent/telegram-app /opt/galactic-dent/deploy"
 
       - name: Sync build output to server
+        timeout-minutes: 5
         run: |
-          SSH="ssh -i ~/.ssh/deploy_key"
+          SSH="ssh -i ~/.ssh/deploy_key -o ConnectTimeout=15 -o ServerAliveInterval=15 -o ServerAliveCountMax=3"
           DEST="${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}"
 
           # --delete is scoped to dist/prisma/out subdirectories only — it
@@ -92,8 +95,10 @@ jobs:
           rsync -az -e "$SSH" deploy/ "$DEST:/opt/galactic-dent/deploy/"
 
       - name: Run remote deploy script
+        timeout-minutes: 10
         run: |
-          ssh -i ~/.ssh/deploy_key "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+          ssh -i ~/.ssh/deploy_key -o ConnectTimeout=15 -o ServerAliveInterval=15 -o ServerAliveCountMax=3 \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
             "DOMAIN='${{ env.DOMAIN }}' \
              POSTGRES_PASSWORD='${{ secrets.POSTGRES_PASSWORD }}' \
              TELEGRAM_BOT_TOKEN='${{ secrets.TELEGRAM_BOT_TOKEN }}' \
