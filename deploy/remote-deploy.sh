@@ -108,25 +108,34 @@ log "Restarting application services..."
 systemctl restart galactic-backend
 systemctl restart galactic-telegram-bot
 
-sleep 2
-log "Status check:"
-systemctl is-active galactic-backend galactic-telegram-bot nginx
-curl -fsS http://127.0.0.1:3000/health && echo
+log "Waiting for backend/bot to settle (systemd shows 'activating' during a restart loop, not just on first boot)..."
+BACKEND_STATE=unknown
+BOT_STATE=unknown
+for i in $(seq 1 10); do
+  BACKEND_STATE=$(systemctl is-active galactic-backend || true)
+  BOT_STATE=$(systemctl is-active galactic-telegram-bot || true)
+  [ "$BACKEND_STATE" = "active" ] && [ "$BOT_STATE" = "active" ] && break
+  sleep 2
+done
+echo "backend=${BACKEND_STATE} bot=${BOT_STATE} nginx=$(systemctl is-active nginx || true)"
 
-log "End-to-end check through nginx itself (not just the backend directly)..."
-SITE_CODE=$(curl -s -o /dev/null -w '%{http_code}' -H "Host: ${DOMAIN}" http://127.0.0.1/)
-API_CODE=$(curl -s -o /dev/null -w '%{http_code}' -H "Host: ${DOMAIN}" http://127.0.0.1/api/health)
-echo "site -> ${SITE_CODE}, api -> ${API_CODE}"
+log "End-to-end check — backend directly, and site+API through nginx over HTTPS (matching what a real visitor hits)..."
+BACKEND_CODE=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/health || echo 000)
+SITE_CODE=$(curl -sk -o /dev/null -w '%{http_code}' --resolve "${DOMAIN}:443:127.0.0.1" "https://${DOMAIN}/" || echo 000)
+API_CODE=$(curl -sk -o /dev/null -w '%{http_code}' --resolve "${DOMAIN}:443:127.0.0.1" "https://${DOMAIN}/api/health" || echo 000)
+echo "backend -> ${BACKEND_CODE}, site -> ${SITE_CODE}, api -> ${API_CODE}"
 
-if [ "$SITE_CODE" != "200" ] || [ "$API_CODE" != "200" ]; then
+if [ "$BACKEND_STATE" != "active" ] || [ "$BOT_STATE" != "active" ] || [ "$SITE_CODE" != "200" ] || [ "$API_CODE" != "200" ]; then
   log "Something's wrong — dumping diagnostics:"
-  echo "--- namei on site/out/index.html (permission trace) ---"
+  echo "--- journalctl galactic-backend (last 60 lines) ---"
+  journalctl -u galactic-backend -n 60 --no-pager || true
+  echo "--- journalctl galactic-telegram-bot (last 60 lines) ---"
+  journalctl -u galactic-telegram-bot -n 60 --no-pager || true
+  echo "--- namei on site/out/index.html ---"
   namei -l "${APP_ROOT}/site/out/index.html" || true
-  echo "--- active nginx config for this server_name ---"
-  nginx -T 2>/dev/null | awk "/server_name ${DOMAIN}/,/^}/" | head -80
-  echo "--- last 30 lines of nginx error log ---"
-  tail -n 30 /var/log/nginx/error.log || true
+  echo "--- last 20 lines of nginx error log ---"
+  tail -n 20 /var/log/nginx/error.log || true
   exit 1
 fi
 
-log "Deploy finished — site and API both responded 200 through nginx."
+log "Deploy finished — backend, bot, and nginx (site+api over HTTPS) are all healthy."
