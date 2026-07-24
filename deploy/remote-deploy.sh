@@ -76,6 +76,13 @@ log "Installing telegram-bot dependencies..."
 cd "${APP_ROOT}/telegram-bot"
 npm ci --omit=dev
 
+log "Ensuring nginx (www-data) can traverse and read the static builds..."
+chmod 755 /opt /opt/galactic-dent
+for d in site/out admin-web/dist telegram-app/dist; do
+  find "${APP_ROOT}/${d}" -type d -exec chmod 755 {} \;
+  find "${APP_ROOT}/${d}" -type f -exec chmod 644 {} \;
+done
+
 log "Installing systemd units..."
 cp "${APP_ROOT}/deploy/systemd/galactic-backend.service" /etc/systemd/system/
 cp "${APP_ROOT}/deploy/systemd/galactic-telegram-bot.service" /etc/systemd/system/
@@ -106,4 +113,20 @@ log "Status check:"
 systemctl is-active galactic-backend galactic-telegram-bot nginx
 curl -fsS http://127.0.0.1:3000/health && echo
 
-log "Deploy finished."
+log "End-to-end check through nginx itself (not just the backend directly)..."
+SITE_CODE=$(curl -s -o /dev/null -w '%{http_code}' -H "Host: ${DOMAIN}" http://127.0.0.1/)
+API_CODE=$(curl -s -o /dev/null -w '%{http_code}' -H "Host: ${DOMAIN}" http://127.0.0.1/api/health)
+echo "site -> ${SITE_CODE}, api -> ${API_CODE}"
+
+if [ "$SITE_CODE" != "200" ] || [ "$API_CODE" != "200" ]; then
+  log "Something's wrong — dumping diagnostics:"
+  echo "--- namei on site/out/index.html (permission trace) ---"
+  namei -l "${APP_ROOT}/site/out/index.html" || true
+  echo "--- active nginx config for this server_name ---"
+  nginx -T 2>/dev/null | awk "/server_name ${DOMAIN}/,/^}/" | head -80
+  echo "--- last 30 lines of nginx error log ---"
+  tail -n 30 /var/log/nginx/error.log || true
+  exit 1
+fi
+
+log "Deploy finished — site and API both responded 200 through nginx."
