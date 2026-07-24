@@ -132,6 +132,14 @@ jobs:
             -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36" \
             "https://${{ env.DOMAIN }}/" || true
 
+      - name: Verify which bot TELEGRAM_BOT_TOKEN actually belongs to
+        if: always()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: |
+          curl -s "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getMe" | \
+            sed -E 's/"id":[0-9]+/"id":REDACTED/'
+
       - name: Diagnose Mini App session verification against production
         if: always()
         env:
