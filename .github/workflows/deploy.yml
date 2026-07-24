@@ -106,3 +106,13 @@ jobs:
       - name: Clean up SSH key
         if: always()
         run: rm -f ~/.ssh/deploy_key
+
+      - name: External reachability check (from the public internet, not loopback)
+        if: always()
+        run: |
+          echo "--- default curl UA ---"
+          curl -s -o /dev/null -w 'default UA -> %{http_code}\n' "https://${{ env.DOMAIN }}/" || true
+          echo "--- browser-like UA ---"
+          curl -s -o /dev/null -w 'browser UA -> %{http_code}\n' \
+            -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36" \
+            "https://${{ env.DOMAIN }}/" || true
