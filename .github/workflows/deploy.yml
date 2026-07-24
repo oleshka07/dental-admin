@@ -132,14 +132,6 @@ jobs:
             -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36" \
             "https://${{ env.DOMAIN }}/" || true
 
-      - name: Verify which bot TELEGRAM_BOT_TOKEN actually belongs to
-        if: always()
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-        run: |
-          curl -s "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getMe" | \
-            sed -E 's/"id":[0-9]+/"id":REDACTED/'
-
       # End-to-end guard against the exact regression that broke the Mini App:
       # the payload is signed the way real Telegram signs it — `signature` is a
       # normal field inside the data-check-string, only `hash` is left out — and
