@@ -53,6 +53,70 @@ function hashesMatch(a: string, b: string): boolean {
 }
 
 /**
+ * Runs after a verification failure to find out *why*. It re-checks the same
+ * payload against every plausible construction of the data-check-string and
+ * reports the name of whichever one Telegram actually used.
+ *
+ * This runs on the server rather than in CI on purpose: the repository is
+ * public, so CI logs are public, and the raw initData contains the user's
+ * Telegram profile plus a signature that stays replayable for 24h. Here it
+ * never leaves the box, and only the winning strategy's name is logged.
+ */
+function diagnoseMismatch(initData: string, botToken: string, expectedHash: string): string {
+  const pairs = splitPairs(initData);
+  const withoutHash = pairs.filter(([key]) => key !== 'hash');
+  const withoutHashOrSignature = withoutHash.filter(([key]) => key !== 'signature');
+
+  const decoders: Record<string, (value: string) => string> = {
+    rfc3986: (value) => safeDecode(value),
+    form: (value) => safeDecode(value.replace(/\+/g, ' ')),
+    raw: (value) => value,
+  };
+
+  const fieldSets: Record<string, Field[]> = {
+    'signature-excluded': withoutHashOrSignature,
+    'signature-included': withoutHash,
+  };
+
+  const tokens: Record<string, string> = {
+    trimmed: botToken.trim(),
+    untrimmed: botToken,
+  };
+
+  const sorters: Record<string, (a: string, b: string) => number> = {
+    codepoint: (a, b) => (a < b ? -1 : a > b ? 1 : 0),
+    locale: (a, b) => a.localeCompare(b),
+  };
+
+  for (const [tokenName, token] of Object.entries(tokens)) {
+    const secretKey = crypto.createHmac('sha256', 'WebAppData').update(token).digest();
+    // Telegram's documented scheme uses HMAC(key="WebAppData"); the older Login
+    // Widget scheme uses SHA256(token) directly. Check both.
+    const loginWidgetKey = crypto.createHash('sha256').update(token).digest();
+
+    for (const [keyName, key] of Object.entries({ webapp: secretKey, 'login-widget': loginWidgetKey })) {
+      for (const [setName, fields] of Object.entries(fieldSets)) {
+        for (const [decoderName, decode] of Object.entries(decoders)) {
+          for (const [sorterName, sorter] of Object.entries(sorters)) {
+            const dcs = fields
+              .map(([k, v]) => [safeDecode(k), decode(v)] as Field)
+              .sort(([a], [b]) => sorter(a, b))
+              .map(([k, v]) => `${k}=${v}`)
+              .join('\n');
+            const computed = crypto.createHmac('sha256', key).update(dcs).digest('hex');
+            if (computed.toLowerCase() === expectedHash.toLowerCase()) {
+              return `token=${tokenName} secret=${keyName} fields=${setName} decode=${decoderName} sort=${sorterName}`;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return 'NONE — no construction reproduced the signature (token likely belongs to a different bot)';
+}
+
+/**
  * Verifies a Telegram Mini App `initData` string per Telegram's documented
  * algorithm (https://core.telegram.org/bots/webapps#validating-data-received-via-the-mini-app).
  * Returns the verified user only if the HMAC signature matches AND the
@@ -126,6 +190,7 @@ export function verifyInitData(initData: string, botToken: string): VerifiedInit
     containedLiteralPlus: signed.some(([, value]) => value.includes('+')),
     botTokenHadSurroundingWhitespace: botToken !== botToken.trim(),
     botTokenLength: token.length,
+    matchingStrategy: diagnoseMismatch(initData, botToken, hash),
   });
 
   return null;
