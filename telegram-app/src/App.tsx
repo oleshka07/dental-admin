@@ -37,8 +37,12 @@ export default function App() {
         if (!res.patient) setStack([{ name: 'register' }]);
         setLoading(false);
       })
-      .catch(() => {
-        setError('Nepodařilo se ověřit relaci. Zkuste prosím aplikaci zavřít a otevřít znovu.');
+      .catch((err) => {
+        // Temporary diagnostic detail appended to the user-facing message —
+        // this is the only way to see what's actually failing on a real
+        // device, since there's no devtools access inside Telegram's WebView.
+        const detail = err instanceof Error ? err.message : String(err);
+        setError(`Nepodařilo se ověřit relaci. Zkuste prosím aplikaci zavřít a otevřít znovu.\n\n[diag] ${detail}`);
         setLoading(false);
       });
   }, [initData]);
@@ -53,7 +57,7 @@ export default function App() {
     return (
       <div className="screen center-state">
         <div className="emoji">⚠️</div>
-        <p>{error}</p>
+        <p style={{ whiteSpace: 'pre-wrap' }}>{error}</p>
       </div>
     );
   }
