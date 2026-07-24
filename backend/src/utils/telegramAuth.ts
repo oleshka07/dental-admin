@@ -61,6 +61,12 @@ export function verifyInitData(initData: string, botToken: string): VerifiedInit
       computedHashPrefix: computedHash.slice(0, 8),
       dataCheckStringKeys: Array.from(params.keys()),
       dataCheckStringLength: dataCheckString.length,
+      // Full raw values — this is the site owner's own server log, needed to
+      // see byte-for-byte what's actually being hashed vs. expected. Remove
+      // this whole diagnostic block once the mismatch cause is confirmed.
+      dataCheckString: JSON.stringify(dataCheckString),
+      rawInitDataLength: initData.length,
+      rawInitData: initData,
     });
     return null;
   }
