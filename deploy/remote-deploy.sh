@@ -24,6 +24,12 @@ ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-}"
 ANTHROPIC_MODEL="${ANTHROPIC_MODEL:-claude-sonnet-5}"
 STAFF_CHAT_ID="${STAFF_CHAT_ID:-}"
 
+# The bot token is the HMAC key for Telegram Mini App signature checks, so a
+# stray space/newline picked up when the CI secret was pasted would silently
+# invalidate every real signature. Strip surrounding whitespace before it ever
+# reaches the .env files.
+TELEGRAM_BOT_TOKEN="$(printf '%s' "${TELEGRAM_BOT_TOKEN}" | tr -d '[:space:]')"
+
 log() { echo "==> $*"; }
 
 log "Installing system packages (skipped for anything already present)..."

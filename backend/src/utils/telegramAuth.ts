@@ -16,6 +16,42 @@ export interface VerifiedInitData {
 // Bounds how long a captured initData string can be replayed against the API.
 const MAX_AUTH_AGE_SECONDS = 24 * 60 * 60;
 
+type Field = [key: string, value: string];
+
+function safeDecode(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    // Malformed percent-sequence — keep the raw text rather than throwing, so
+    // a bad field can still fail the HMAC check instead of crashing the route.
+    return value;
+  }
+}
+
+/** Splits a query string into raw (still-encoded) key/value pairs. */
+function splitPairs(query: string): Field[] {
+  return query
+    .split('&')
+    .filter(Boolean)
+    .map((pair) => {
+      const eq = pair.indexOf('=');
+      return eq === -1 ? ([pair, ''] as Field) : ([pair.slice(0, eq), pair.slice(eq + 1)] as Field);
+    });
+}
+
+/** Telegram sorts by key; use codepoint order, not locale-dependent collation. */
+function buildDataCheckString(fields: Field[]): string {
+  return [...fields]
+    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+    .map(([key, value]) => `${key}=${value}`)
+    .join('\n');
+}
+
+function hashesMatch(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(a, 'hex'), Buffer.from(b, 'hex'));
+}
+
 /**
  * Verifies a Telegram Mini App `initData` string per Telegram's documented
  * algorithm (https://core.telegram.org/bots/webapps#validating-data-received-via-the-mini-app).
@@ -23,75 +59,64 @@ const MAX_AUTH_AGE_SECONDS = 24 * 60 * 60;
  * payload isn't stale — never trust a client-supplied telegram id without this.
  */
 export function verifyInitData(initData: string, botToken: string): VerifiedInitData | null {
-  // TEMPORARY diagnostic logging — pinpointing why real Telegram-issued
-  // initData is being rejected in production. Logs no secrets (not the bot
-  // token, not the full hash) — only which check failed and non-sensitive
-  // context. Remove once the real cause is confirmed.
-  const log = (reason: string, extra?: Record<string, unknown>) =>
-    console.error(`[verifyInitData] rejected: ${reason}`, extra ?? {});
+  if (!initData || !botToken) return null;
 
-  if (!initData || !botToken) {
-    log(!initData ? 'empty initData' : 'missing botToken');
-    return null;
-  }
+  // The token arrives via an .env file written from a CI secret. A stray
+  // trailing space or newline in that secret silently changes the HMAC key and
+  // makes every real signature fail, so normalise it before use.
+  const token = botToken.trim();
+  if (!token) return null;
 
-  const params = new URLSearchParams(initData);
-  const hash = params.get('hash');
-  if (!hash || !/^[0-9a-f]{64}$/i.test(hash)) {
-    log('missing/malformed hash', { hasHash: Boolean(hash), hashLength: hash?.length ?? 0 });
-    return null;
-  }
-  params.delete('hash');
-  // Newer clients also send `signature` (Ed25519, third-party verification) —
-  // it's never part of the HMAC data-check-string, same as `hash` itself.
-  params.delete('signature');
+  const pairs = splitPairs(initData);
 
-  const dataCheckString = Array.from(params.entries())
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, value]) => `${key}=${value}`)
-    .join('\n');
+  const rawHash = pairs.find(([key]) => key === 'hash')?.[1];
+  if (!rawHash) return null;
+  const hash = safeDecode(rawHash);
+  if (!/^[0-9a-f]{64}$/i.test(hash)) return null;
 
-  const secretKey = crypto.createHmac('sha256', 'WebAppData').update(botToken).digest();
-  const computedHash = crypto.createHmac('sha256', secretKey).update(dataCheckString).digest('hex');
+  // `hash` is the signature itself; `signature` is Telegram's separate Ed25519
+  // field for third-party verification. Neither belongs in the check string.
+  const signed = pairs.filter(([key]) => key !== 'hash' && key !== 'signature');
 
-  const isValid = crypto.timingSafeEqual(Buffer.from(computedHash, 'hex'), Buffer.from(hash, 'hex'));
-  if (!isValid) {
-    log('hash mismatch', {
-      receivedHashPrefix: hash.slice(0, 8),
-      computedHashPrefix: computedHash.slice(0, 8),
-      dataCheckStringKeys: Array.from(params.keys()),
-      dataCheckStringLength: dataCheckString.length,
-      // Full raw values — this is the site owner's own server log, needed to
-      // see byte-for-byte what's actually being hashed vs. expected. Remove
-      // this whole diagnostic block once the mismatch cause is confirmed.
-      dataCheckString: JSON.stringify(dataCheckString),
-      rawInitDataLength: initData.length,
-      rawInitData: initData,
-    });
-    return null;
-  }
+  // A query string has two legitimate decodings that differ only in how '+' is
+  // treated: RFC 3986 percent-decoding keeps it literal, while
+  // application/x-www-form-urlencoded turns it into a space. Telegram signs the
+  // literal value, and its base64 `query_id` can genuinely contain '+', so
+  // decoding it the form-urlencoded way (what URLSearchParams does) corrupts
+  // the value and breaks the HMAC. Try both and accept whichever reproduces
+  // Telegram's signature — the HMAC is still what proves authenticity.
+  const candidates: Field[][] = [
+    signed.map(([key, value]) => [safeDecode(key), safeDecode(value)] as Field),
+    signed.map(([key, value]) => [safeDecode(key), safeDecode(value.replace(/\+/g, ' '))] as Field),
+  ];
 
-  const authDate = Number(params.get('auth_date'));
-  const ageSeconds = Date.now() / 1000 - authDate;
-  if (!authDate || ageSeconds > MAX_AUTH_AGE_SECONDS) {
-    log('stale or missing auth_date', { authDate, ageSeconds });
-    return null;
-  }
+  const secretKey = crypto.createHmac('sha256', 'WebAppData').update(token).digest();
 
-  const userJson = params.get('user');
-  if (!userJson) {
-    log('missing user field');
-    return null;
-  }
-  try {
-    const user = JSON.parse(userJson) as TelegramUser;
-    if (!user.id) {
-      log('user JSON missing id');
+  for (const fields of candidates) {
+    const computedHash = crypto
+      .createHmac('sha256', secretKey)
+      .update(buildDataCheckString(fields))
+      .digest('hex');
+
+    if (!hashesMatch(computedHash, hash)) continue;
+
+    // Only read the payload out of the candidate that actually verified, so the
+    // data we trust is exactly the data the signature covers.
+    const byKey = new Map(fields);
+
+    const authDate = Number(byKey.get('auth_date'));
+    if (!authDate || Date.now() / 1000 - authDate > MAX_AUTH_AGE_SECONDS) return null;
+
+    const userJson = byKey.get('user');
+    if (!userJson) return null;
+    try {
+      const user = JSON.parse(userJson) as TelegramUser;
+      if (!user.id) return null;
+      return { user, authDate };
+    } catch {
       return null;
     }
-    return { user, authDate };
-  } catch {
-    log('user JSON parse failure');
-    return null;
   }
+
+  return null;
 }
