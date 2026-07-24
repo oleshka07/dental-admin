@@ -26,6 +26,9 @@ async function main() {
   await app.register(cors, { origin: corsOrigin });
 
   app.get('/health', async () => ({ status: 'ok' }));
+  // nginx proxies /api/ verbatim to this backend, so the externally-visible
+  // health check needs to exist at this exact path too, not just /health.
+  app.get('/api/health', async () => ({ status: 'ok' }));
 
   await app.register(visitTypesRoutes);
   await app.register(slotTemplatesRoutes);
