@@ -111,6 +111,13 @@ jobs:
              STAFF_CHAT_ID='${{ secrets.STAFF_CHAT_ID }}' \
              bash /opt/galactic-dent/deploy/remote-deploy.sh"
 
+      - name: Fetch recent verifyInitData diagnostic logs
+        if: always()
+        run: |
+          ssh -i ~/.ssh/deploy_key -o ConnectTimeout=15 -o ServerAliveInterval=15 -o ServerAliveCountMax=3 \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "journalctl -u galactic-backend --since '-2 hours' --no-pager | grep -A5 '\[verifyInitData\]' | tail -n 200" || true
+
       - name: Clean up SSH key
         if: always()
         run: rm -f ~/.ssh/deploy_key
