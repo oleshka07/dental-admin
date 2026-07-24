@@ -1,59 +1,107 @@
-import { SERVICES } from '@/lib/content';
 import BookButton from '@/components/BookButton';
+import { CLINIC, SERVICES, PRICING } from '@/lib/content';
 
-export const metadata = { title: 'Služby a ceník — Galactic Dent' };
+export const metadata = {
+  title: 'Služby a orientační ceník | Galactic Dent Karlovy Vary',
+  description:
+    'Přehled zubních výkonů, co hradí pojišťovna a kde se doplácí. Orientační ceník zubní ordinace Galactic Dent v Karlových Varech.',
+};
+
+function priceLabel(priceFrom: number | null, note?: string) {
+  if (priceFrom === null) return note ?? PRICING.fallback;
+  return `od ${priceFrom.toLocaleString('cs-CZ')} Kč`;
+}
 
 export default function ServicesPage() {
   return (
-    <div className="container section">
-      <h1 className="section-title">Služby a ceník</h1>
-      <p className="section-subtitle">
-        Ceny výkonů jsou stanoveny transparentně na základě časové náročnosti ošetření a použitého
-        materiálu, v souladu s Cenovým výměrem MZ ČR. U výkonů hrazených pojišťovnou vždy jasně
-        rozlišujeme, co je hrazeno a kde je případný doplatek.
-      </p>
+    <div className="section container">
+      <h1 className="page-title">Služby a ceník</h1>
+      <p className="page-lead">{PRICING.intro}</p>
 
-      <div className="card-grid" style={{ marginBottom: 40 }}>
+      <div className="service-list">
         {SERVICES.map((s) => (
-          <div className={`card ${s.slug === 'akutni-bolest' ? 'acute' : ''}`} key={s.slug}>
-            <h3>{s.name}</h3>
-            <p>{s.description}</p>
-            <BookButton acute={s.slug === 'akutni-bolest'}>Objednat se</BookButton>
-          </div>
+          <article className={`service-row ${s.slug === 'akutni-bolest' ? 'acute' : ''}`} id={s.slug} key={s.slug}>
+            <div className="service-row-main">
+              <h2>{s.name}</h2>
+              <p className="service-row-detail">{s.detail}</p>
+              <dl className="insurance-facts">
+                <div>
+                  <dt>Děti do 18 let</dt>
+                  <dd>{s.insuranceKids}</dd>
+                </div>
+                <div>
+                  <dt>Dospělí</dt>
+                  <dd>{s.insuranceAdults}</dd>
+                </div>
+              </dl>
+            </div>
+            <aside className="service-row-side">
+              {/* "Úhrada", not "Doplatek": for prevence the value is "Hrazeno
+                  pojišťovnou", which a "Doplatek" label would contradict. */}
+              <span className="price-label">Úhrada</span>
+              <strong className="price-value">{priceLabel(s.priceFrom, s.priceNote)}</strong>
+              {s.slug === 'akutni-bolest' ? (
+                <BookButton acute variant="ghost">
+                  Řešit akutní bolest
+                </BookButton>
+              ) : (
+                <BookButton>Objednat se</BookButton>
+              )}
+            </aside>
+          </article>
         ))}
       </div>
 
-      <h2 style={{ fontSize: 22 }}>Pokrytí zdravotní pojišťovnou (2026)</h2>
-      <p className="section-subtitle">Spolupracujeme s VZP, OZP, ZP MV ČR a dalšími pojišťovnami.</p>
-      <div style={{ overflowX: 'auto' }}>
-        <table className="price-table">
-          <thead>
-            <tr>
-              <th>Kategorie služeb</th>
-              <th>Děti do 18 let</th>
-              <th>Dospělí</th>
-            </tr>
-          </thead>
-          <tbody>
-            {SERVICES.filter((s) => s.slug !== 'akutni-bolest').map((s) => (
-              <tr key={s.slug}>
-                <td>{s.name}</td>
-                <td>{s.insuranceKids}</td>
-                <td>{s.insuranceAdults}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <p className="price-disclaimer">{PRICING.disclaimer}</p>
 
-      <div className="callout" style={{ marginTop: 32 }}>
-        <h3 style={{ marginTop: 0 }}>Jak počítáme cenu ošetření</h3>
-        <p style={{ color: 'var(--text-muted)', margin: 0 }}>
-          Základem kalkulace je hodinová/minutová sazba kliniky, která zohledňuje čas lékaře, provozní
-          náklady a použité vybavení. Standardní materiály jsou zahrnuty v ceně výkonu hrazeného
-          pojišťovnou, nadstandardní materiály (např. estetické kompozity, nadstandardní protetika)
-          jsou účtovány zvlášť a vždy vám je před ošetřením sdělíme.
+      <section className="section">
+        <h2 className="section-title">{PRICING.howWeCalculate.heading}</h2>
+        <ul className="reason-list">
+          {PRICING.howWeCalculate.points.map((point) => (
+            <li key={point}>{point}</li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="section">
+        <h2 className="section-title">Pokrytí zdravotní pojišťovnou</h2>
+        <p className="section-subtitle">
+          Spolupracujeme s VZP, OZP, ZP MV ČR a dalšími pojišťovnami. Od 1. 1. 2026 platí nová
+          úhradová vyhláška, která u některých výkonů doplatek snižuje.
         </p>
+        <div className="table-scroll">
+          <table className="price-table">
+            <thead>
+              <tr>
+                <th>Kategorie služeb</th>
+                <th>Děti do 18 let</th>
+                <th>Dospělí</th>
+              </tr>
+            </thead>
+            <tbody>
+              {SERVICES.map((s) => (
+                <tr key={s.slug}>
+                  <td>{s.name}</td>
+                  <td>{s.insuranceKids}</td>
+                  <td>{s.insuranceAdults}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div className="callout sokolov-callout">
+        <div>
+          <h2 className="section-title" style={{ marginBottom: 8 }}>
+            Nejste si jistí, co potřebujete?
+          </h2>
+          <p>
+            Objednejte se na vstupní vyšetření. Projdeme chrup a řekneme si, co je nutné teď a co
+            může počkat, i s cenou. Nebo zavolejte na {CLINIC.phone} a zeptejte se rovnou.
+          </p>
+        </div>
+        <BookButton>Objednat vyšetření</BookButton>
       </div>
     </div>
   );

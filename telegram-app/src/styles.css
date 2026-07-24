@@ -41,9 +41,11 @@ body {
   margin-bottom: 20px;
 }
 
+/* logo.png is 1408×768 — a wide image. Forcing it into a 36×36 square squashed
+   the artwork; fix the width and let the height follow the real ratio. */
 .app-header img {
-  width: 36px;
-  height: 36px;
+  width: 76px;
+  height: auto;
   border-radius: 8px;
 }
 

@@ -1,63 +1,96 @@
-import { CLINIC, SOKOLOV_BRIDGE } from '@/lib/content';
 import BookButton from '@/components/BookButton';
+import { MapPinIcon, ClockIcon, PhoneIcon } from '@/components/icons';
+import { CLINIC, SOKOLOV_BRIDGE } from '@/lib/content';
 
-export const metadata = { title: 'Kontakty — Galactic Dent' };
+export const metadata = {
+  title: 'Kontakty a ordinační hodiny | Galactic Dent Karlovy Vary',
+  description:
+    'Adresa, ordinační hodiny a telefon zubní ordinace Galactic Dent, Dr. Přemysla Jeřábka 1093/13, Karlovy Vary — Rybáře.',
+};
 
 export default function ContactPage() {
-  const mapQuery = encodeURIComponent(CLINIC.address);
-
   return (
-    <div className="container section">
-      <h1 className="section-title">Kontakty</h1>
-
-      <div className="card-grid" style={{ marginBottom: 32 }}>
-        <div className="card">
-          <h3>📍 Adresa</h3>
-          <p>{CLINIC.address}</p>
-        </div>
-        <div className="card">
-          <h3>🕐 Ordinační hodiny</h3>
-          {CLINIC.hours.map((h) => (
-            <p key={h.day} style={{ margin: 0 }}>
-              {h.day}: {h.time}
-            </p>
-          ))}
-        </div>
-        <div className="card">
-          <h3>☎️ Spojení</h3>
-          <p style={{ margin: 0 }}>{CLINIC.phone}</p>
-          <p style={{ margin: 0 }}>{CLINIC.email}</p>
-        </div>
-      </div>
-
-      <div style={{ borderRadius: 'var(--radius)', overflow: 'hidden', marginBottom: 8, border: '1px solid var(--border)' }}>
-        <iframe
-          title="Mapa Galactic Dent"
-          width="100%"
-          height="320"
-          style={{ border: 0, display: 'block' }}
-          loading="lazy"
-          src={`https://www.google.com/maps?q=${mapQuery}&output=embed`}
-        />
-      </div>
-      <p style={{ marginBottom: 32 }}>
-        <a
-          href={`https://www.google.com/maps/search/?api=1&query=${mapQuery}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ color: 'var(--navy)', fontWeight: 600, fontSize: 14 }}
-        >
-          Otevřít v Google Maps →
-        </a>
+    <div className="section container">
+      <h1 className="page-title">Kontakty</h1>
+      <p className="page-lead">
+        Ordinace je v Rybářích, pár minut od centra Karlových Varů. {CLINIC.languages}
       </p>
 
-      <div className="callout" style={{ marginBottom: 32 }}>
-        <h2 style={{ marginTop: 0, fontSize: 20 }}>{SOKOLOV_BRIDGE.heading}</h2>
-        <p style={{ color: 'var(--text-muted)' }}>{SOKOLOV_BRIDGE.text}</p>
-        <BookButton>Objednat se online</BookButton>
+      <div className="card-grid cols-3">
+        <div className="card feature-card">
+          <span className="feature-icon">
+            <MapPinIcon size={22} />
+          </span>
+          <h3>Adresa</h3>
+          <p>{CLINIC.address}</p>
+          <a className="inline-link" href={CLINIC.mapsUrl} target="_blank" rel="noopener noreferrer">
+            Otevřít v Google Maps
+          </a>
+        </div>
+
+        <div className="card feature-card">
+          <span className="feature-icon">
+            <ClockIcon size={22} />
+          </span>
+          <h3>Ordinační hodiny</h3>
+          <dl className="hours-list">
+            {CLINIC.hours.map((h) => (
+              <div key={h.day}>
+                <dt>{h.day}</dt>
+                <dd>{h.time}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+
+        <div className="card feature-card">
+          <span className="feature-icon">
+            <PhoneIcon size={22} />
+          </span>
+          <h3>Spojení</h3>
+          <p>
+            <a className="inline-link" href={`tel:${CLINIC.phoneHref}`}>
+              {CLINIC.phone}
+            </a>
+          </p>
+          <p>
+            <a className="inline-link" href={`mailto:${CLINIC.email}`}>
+              {CLINIC.email}
+            </a>
+          </p>
+          <p className="muted-note">Objednat se můžete i online, kdykoli mimo ordinační hodiny.</p>
+        </div>
       </div>
 
-      <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>
+      <section className="section">
+        <h2 className="section-title">Jak se k nám dostanete</h2>
+        <div className="card-grid cols-3">
+          <div className="card">
+            <h3>Autem ze Sokolova</h3>
+            <p>Zhruba 20 minut po silnici 6 směr Karlovy Vary, sjezd na Rybáře.</p>
+          </div>
+          <div className="card">
+            <h3>MHD</h3>
+            <p>Rybáře jsou obsloužené několika linkami z terminálu Tržnice, jízda trvá pár minut.</p>
+          </div>
+          <div className="card">
+            <h3>Vlakem a autobusem</h3>
+            <p>Ze Sokolova jede spoj několikrát za hodinu, z nádraží je to do ordinace kousek.</p>
+          </div>
+        </div>
+      </section>
+
+      <div className="callout sokolov-callout">
+        <div>
+          <h2 className="section-title" style={{ marginBottom: 8 }}>
+            {SOKOLOV_BRIDGE.heading}
+          </h2>
+          <p>{SOKOLOV_BRIDGE.text}</p>
+        </div>
+        <BookButton>{SOKOLOV_BRIDGE.cta}</BookButton>
+      </div>
+
+      <p className="legal-line">
         {CLINIC.legalName}, IČO: {CLINIC.ico}
       </p>
     </div>

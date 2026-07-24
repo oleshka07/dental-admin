@@ -1,90 +1,181 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import BookButton from '@/components/BookButton';
-import { SERVICES, FOUNDER } from '@/lib/content';
+import ClinicLogo from '@/components/ClinicLogo';
+import { ShieldIcon, HeartHandIcon, BoltIcon, TeamIcon, ClockIcon, MapPinIcon, PhoneIcon } from '@/components/icons';
+import { SERVICES, FOUNDER, CLINIC, FIRST_VISIT, FAQ, SOKOLOV_BRIDGE } from '@/lib/content';
+
+const REASONS = [
+  {
+    Icon: ShieldIcon,
+    title: 'Ošetření bez bolesti',
+    text: 'Včetně extrakcí a komplikovaných případů. Anestezii dávkujeme podle výkonu, ne podle rutiny.',
+  },
+  {
+    Icon: HeartHandIcon,
+    title: 'Čas na vysvětlení',
+    text: 'Než sáhneme po nástrojích, víte, co se s vaším zubem děje a jaké máte možnosti.',
+  },
+  {
+    Icon: BoltIcon,
+    title: 'Protetika do 24 hodin',
+    text: 'Vlastní laboratoř u ordinace. Na korunku se nečeká týdny s provizoriem v puse.',
+  },
+  {
+    Icon: TeamIcon,
+    title: 'Sehraná dvojice',
+    text: 'Lékař a asistentka, kteří spolu pracují roky. U křesla je to znát na tempu i na klidu.',
+  },
+];
 
 export default function HomePage() {
+  const nonAcute = SERVICES.filter((s) => s.slug !== 'akutni-bolest');
+  const acute = SERVICES.find((s) => s.slug === 'akutni-bolest');
+
   return (
     <>
       <section className="hero">
         <div className="container hero-inner">
-          <div>
-            <h1>Moderní zubní péče v Karlových Varech — bez bolesti a beze stresu</h1>
+          <div className="hero-copy">
+            <h1>Zubní ordinace v Karlových Varech, kde se ošetření nebojíte</h1>
             <p className="lead">
-              Klinika Galactic Dent navazuje na dlouholetou praxi MDDr. Dmytra Galaktionova ze Sokolova.
-              Stejný lékař, stejný přístup — nyní v nové, moderně vybavené ordinaci.
+              Galactic Dent navazuje na praxi MDDr. Dmytra Galaktionova ze Sokolova. Stejný lékař,
+              stejná asistentka, stejný způsob práce. Jen v nové ordinaci v Rybářích.
             </p>
             <div className="hero-actions">
-              <BookButton>📅 Objednat se online</BookButton>
+              <BookButton>Objednat se online</BookButton>
               <BookButton acute variant="ghost">
-                🔴 Mám akutní bolest
+                Mám akutní bolest
               </BookButton>
             </div>
+            <ul className="hero-facts">
+              <li>
+                <ClockIcon size={18} />
+                <span>Po–Čt 8:00–17:00, Pá 8:00–14:00</span>
+              </li>
+              <li>
+                <MapPinIcon size={18} />
+                <span>{CLINIC.addressShort}</span>
+              </li>
+              <li>
+                <PhoneIcon size={18} />
+                <a href={`tel:${CLINIC.phoneHref}`}>{CLINIC.phone}</a>
+              </li>
+            </ul>
           </div>
           <div className="hero-logo-wrap">
-            <Image src="/logo.png" alt="Galactic Dent" width={340} height={340} priority />
+            <ClinicLogo width={380} priority className="hero-logo" />
           </div>
         </div>
       </section>
 
       <section className="section container">
-        <h2 className="section-title">Proč si pacienti vybírají Galactic Dent</h2>
+        <h2 className="section-title">Proč k nám pacienti jezdí i ze Sokolova</h2>
         <p className="section-subtitle">
-          Vycházíme z toho, co si na dosavadní péči MDDr. Galaktionova pacienti nejvíce cení.
+          Vycházíme z toho, co na dosavadní péči MDDr. Galaktionova pacienti zmiňují nejčastěji.
         </p>
-        <div className="card-grid">
-          <div className="card">
-            <h3>😌 Zcela bez bolesti</h3>
-            <p>Moderní anestezie a šetrné postupy i u komplikovaných extrakcí.</p>
-          </div>
-          <div className="card">
-            <h3>🤝 Lidský přístup</h3>
-            <p>Čas na vysvětlení, klid pro pacienta a podpora i pro ty, kdo měnil lékaře.</p>
-          </div>
-          <div className="card">
-            <h3>⚡ Protetika do 24 hodin</h3>
-            <p>Vlastní laboratoř umožňuje expresní zhotovení náhrad a korunek.</p>
-          </div>
-          <div className="card">
-            <h3>👩‍⚕️ Zkušený tým</h3>
-            <p>Lékař a asistentka, kteří spolu léta pracují v naprosté souhře.</p>
-          </div>
-        </div>
-      </section>
-
-      <section className="section container">
-        <h2 className="section-title">Naše služby</h2>
-        <p className="section-subtitle">Kompletní péče o chrup pro celou rodinu — od prevence po protetiku.</p>
-        <div className="card-grid">
-          {SERVICES.map((s) => (
-            <div className={`card ${s.slug === 'akutni-bolest' ? 'acute' : ''}`} key={s.slug}>
-              <h3>{s.name}</h3>
-              <p>{s.description}</p>
-              {s.slug === 'akutni-bolest' ? (
-                <BookButton acute variant="ghost">
-                  Řešit akutní bolest
-                </BookButton>
-              ) : (
-                <Link href="/sluzby-a-ceny" className="btn btn-secondary">
-                  Zjistit více
-                </Link>
-              )}
+        <div className="card-grid cols-4">
+          {REASONS.map(({ Icon, title, text }) => (
+            <div className="card feature-card" key={title}>
+              <span className="feature-icon">
+                <Icon size={22} />
+              </span>
+              <h3>{title}</h3>
+              <p>{text}</p>
             </div>
           ))}
         </div>
       </section>
 
       <section className="section container">
-        <div className="callout" style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 24, alignItems: 'center' }}>
+        <h2 className="section-title">Co u nás vyřešíte</h2>
+        <p className="section-subtitle">Péče o chrup pro celou rodinu, od prevence po implantáty.</p>
+        <div className="card-grid cols-4">
+          {nonAcute.map((s) => (
+            <div className="card service-card" key={s.slug}>
+              <div>
+                <h3>{s.name}</h3>
+                <p>{s.description}</p>
+              </div>
+              <Link href={`/sluzby-a-ceny#${s.slug}`} className="btn btn-secondary">
+                Detail a pojišťovna
+              </Link>
+            </div>
+          ))}
+        </div>
+
+        {acute && (
+          <div className="acute-band">
+            <div>
+              <h3>{acute.name}</h3>
+              <p>{acute.detail}</p>
+            </div>
+            <div className="acute-band-actions">
+              <BookButton acute variant="ghost">
+                Řešit akutní bolest
+              </BookButton>
+              <a href={`tel:${CLINIC.phoneHref}`} className="acute-band-phone">
+                nebo volejte {CLINIC.phone}
+              </a>
+            </div>
+          </div>
+        )}
+      </section>
+
+      <section className="section container">
+        <h2 className="section-title">{FIRST_VISIT.heading}</h2>
+        <p className="section-subtitle">Žádné překvapení na konci. Cenu znáte dřív, než začneme.</p>
+        <ol className="steps">
+          {FIRST_VISIT.steps.map((step, i) => (
+            <li key={step.title}>
+              <span className="step-num">{i + 1}</span>
+              <div>
+                <h3>{step.title}</h3>
+                <p>{step.text}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="section container">
+        <div className="founder-band">
+          <div className="founder-portrait" aria-hidden="true">
+            DG
+          </div>
           <div>
-            <h2 className="section-title" style={{ marginBottom: 8 }}>
+            <h2 className="section-title" style={{ marginBottom: 6 }}>
               {FOUNDER.name}
             </h2>
-            <p style={{ color: 'var(--text-muted)', maxWidth: 560 }}>{FOUNDER.bio}</p>
+            <p className="founder-role">{FOUNDER.title}</p>
+            <p>{FOUNDER.short}</p>
+            <Link href="/o-zakladateli" className="btn btn-primary">
+              Více o zakladateli
+            </Link>
           </div>
-          <Link href="/o-zakladateli" className="btn btn-primary">
-            Více o zakladateli
-          </Link>
+        </div>
+      </section>
+
+      <section className="section container">
+        <div className="callout sokolov-callout">
+          <div>
+            <h2 className="section-title" style={{ marginBottom: 8 }}>
+              {SOKOLOV_BRIDGE.heading}
+            </h2>
+            <p>{SOKOLOV_BRIDGE.text}</p>
+          </div>
+          <BookButton>{SOKOLOV_BRIDGE.cta}</BookButton>
+        </div>
+      </section>
+
+      <section className="section container">
+        <h2 className="section-title">Časté dotazy</h2>
+        <div className="faq">
+          {FAQ.map((item) => (
+            <details key={item.q}>
+              <summary>{item.q}</summary>
+              <p>{item.a}</p>
+            </details>
+          ))}
         </div>
       </section>
     </>

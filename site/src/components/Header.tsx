@@ -1,9 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { useState } from 'react';
 import BookButton from './BookButton';
+import ClinicLogo from './ClinicLogo';
+import { PhoneIcon } from './icons';
+import { CLINIC } from '@/lib/content';
 
 const NAV = [
   { href: '/', label: 'Domů' },
@@ -19,9 +21,11 @@ export default function Header() {
   return (
     <header className="site-header">
       <div className="site-header-inner">
-        <Link href="/" className="logo-link">
-          <Image src="/logo.png" alt="Galactic Dent" width={44} height={44} className="logo-img" />
-          <span className="logo-text">Galactic Dent</span>
+        {/* The logo artwork already contains the wordmark, so a separate
+            "Galactic Dent" text next to it just repeated itself. */}
+        <Link href="/" className="logo-link" onClick={() => setMenuOpen(false)}>
+          <ClinicLogo width={96} className="logo-img" />
+          <span className="sr-only">Galactic Dent — domů</span>
         </Link>
 
         <nav className={`main-nav ${menuOpen ? 'open' : ''}`}>
@@ -33,8 +37,17 @@ export default function Header() {
         </nav>
 
         <div className="header-actions">
+          <a className="header-phone" href={`tel:${CLINIC.phoneHref}`}>
+            <PhoneIcon size={18} />
+            <span>{CLINIC.phone}</span>
+          </a>
           <BookButton>Objednat se</BookButton>
-          <button className="menu-toggle" onClick={() => setMenuOpen((v) => !v)} aria-label="Menu">
+          <button
+            className="menu-toggle"
+            onClick={() => setMenuOpen((v) => !v)}
+            aria-label="Menu"
+            aria-expanded={menuOpen}
+          >
             ☰
           </button>
         </div>

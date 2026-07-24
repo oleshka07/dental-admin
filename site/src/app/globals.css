@@ -314,22 +314,28 @@ table.price-table tr:last-child td {
   padding: 28px;
 }
 
-/* ---------- Floating actions ---------- */
+/* ---------- Floating actions ----------
+   Bottom-right, above the chat bubble. Anchored left they overlapped the
+   content column and footer text at ordinary desktop widths. */
 .floating-actions {
   position: fixed;
-  left: 20px;
-  bottom: 20px;
+  right: 20px;
+  bottom: 88px;
   display: flex;
   flex-direction: column;
+  align-items: flex-end;
   gap: 10px;
   z-index: 60;
 }
 
 .floating-book,
 .floating-acute {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   border: none;
   border-radius: 999px;
-  padding: 12px 18px;
+  padding: 11px 18px;
   font-weight: 700;
   font-size: 14px;
   cursor: pointer;
@@ -798,4 +804,673 @@ table.price-table tr:last-child td {
   font-weight: 700;
   color: var(--navy);
   cursor: pointer;
+}
+
+/* ==========================================================================
+   Layout, footer and content blocks added in the site content pass.
+   The footer previously had NO rules at all, which is why every line of it
+   sat flush against the left edge of the viewport on every page.
+   ========================================================================== */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.page-title {
+  font-size: 34px;
+  margin: 0 0 12px;
+}
+
+.page-lead {
+  color: var(--text-muted);
+  font-size: 17px;
+  max-width: 680px;
+  margin: 0 0 8px;
+}
+
+.prose p {
+  color: var(--text-muted);
+  font-size: 16px;
+  max-width: 680px;
+}
+
+.inline-link {
+  color: var(--navy);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.muted-note {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.legal-line {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-top: 28px;
+}
+
+/* ---------- Header additions ---------- */
+.logo-img {
+  height: auto; /* next/image sets both dims; let the ratio rule */
+  display: block;
+}
+
+.header-phone {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--navy);
+  white-space: nowrap;
+}
+
+/* ---------- Hero ---------- */
+.hero-facts {
+  list-style: none;
+  margin: 28px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.hero-facts li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hero-facts a {
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.hero-logo-wrap img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ---------- Card grids ----------
+   Explicit column counts: `auto-fit` left five service cards as 4 + 1, with a
+   three-column hole next to the orphan. */
+.card-grid.cols-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.card-grid.cols-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.card-grid.cols-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.feature-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  margin-bottom: 14px;
+  background: linear-gradient(135deg, rgba(13, 58, 99, 0.1), rgba(45, 212, 200, 0.18));
+  color: var(--navy);
+}
+
+.feature-card p:last-child {
+  margin-bottom: 0;
+}
+
+/* Buttons sit on a shared baseline even when descriptions differ in length. */
+.service-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.service-card .btn {
+  align-self: flex-start;
+}
+
+/* ---------- Acute band ---------- */
+.acute-band {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: center;
+  padding: 24px 28px;
+  border: 2px solid var(--acute-red);
+  border-radius: var(--radius);
+  background: rgba(229, 72, 77, 0.05);
+}
+
+.acute-band h3 {
+  margin: 0 0 6px;
+  font-size: 19px;
+}
+
+.acute-band p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 14px;
+  max-width: 620px;
+}
+
+.acute-band-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.acute-band-phone {
+  font-size: 13px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* ---------- Steps ---------- */
+.steps {
+  list-style: none;
+  counter-reset: step;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.steps li {
+  display: flex;
+  gap: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+  box-shadow: var(--shadow);
+}
+
+.step-num {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--navy), var(--teal));
+  color: white;
+  font-weight: 800;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.steps h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+}
+
+.steps p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* ---------- Founder band ---------- */
+.founder-band {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 28px;
+  align-items: center;
+  background: linear-gradient(135deg, rgba(13, 58, 99, 0.06), rgba(45, 212, 200, 0.08));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 32px;
+}
+
+.founder-portrait {
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--navy), var(--teal));
+  color: white;
+  font-weight: 800;
+  font-size: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.founder-role {
+  font-weight: 700;
+  color: var(--navy);
+  margin: 0 0 10px;
+  font-size: 14px;
+}
+
+.founder-band p {
+  color: var(--text-muted);
+  max-width: 620px;
+}
+
+.founder-band .btn {
+  margin-top: 6px;
+  display: inline-block;
+}
+
+/* ---------- Sokolov / CTA callout ---------- */
+.sokolov-callout {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 28px;
+  align-items: center;
+}
+
+.sokolov-callout p {
+  color: var(--text-muted);
+  margin: 0;
+  max-width: 680px;
+}
+
+/* ---------- Team ---------- */
+.team-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+.team-card .avatar-circle {
+  margin-bottom: 0;
+}
+
+.team-card h3 {
+  margin: 0 0 4px;
+}
+
+.team-role {
+  font-weight: 700;
+  color: var(--navy);
+  font-size: 13px;
+  margin: 0 0 8px;
+}
+
+/* ---------- Services page ---------- */
+.service-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 32px 0 20px;
+}
+
+.service-row {
+  display: grid;
+  grid-template-columns: 1fr 240px;
+  gap: 28px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 26px 28px;
+  box-shadow: var(--shadow);
+  scroll-margin-top: 90px;
+}
+
+.service-row.acute {
+  border: 2px solid var(--acute-red);
+  background: rgba(229, 72, 77, 0.04);
+}
+
+.service-row h2 {
+  font-size: 20px;
+  margin: 0 0 8px;
+}
+
+.service-row-detail {
+  color: var(--text-muted);
+  font-size: 15px;
+  margin: 0 0 18px;
+  max-width: 640px;
+}
+
+.insurance-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 24px;
+  margin: 0;
+}
+
+.insurance-facts dt {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--navy);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 3px;
+}
+
+.insurance-facts dd {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.service-row-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  border-left: 1px solid var(--border);
+  padding-left: 24px;
+}
+
+.service-row.acute .service-row-side {
+  border-left-color: rgba(229, 72, 77, 0.3);
+}
+
+.price-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.price-value {
+  font-size: 17px;
+  color: var(--navy-dark);
+  margin-bottom: 10px;
+}
+
+.price-disclaimer {
+  font-size: 13px;
+  color: var(--text-muted);
+  border-left: 3px solid var(--teal);
+  padding-left: 14px;
+  max-width: 720px;
+}
+
+.reason-list {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--text-muted);
+  max-width: 760px;
+}
+
+.reason-list li {
+  margin-bottom: 10px;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ---------- Hours list ---------- */
+.hours-list {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hours-list > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 14px;
+}
+
+.hours-list dt {
+  color: var(--text-muted);
+}
+
+.hours-list dd {
+  margin: 0;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ---------- FAQ ---------- */
+.faq {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 820px;
+}
+
+.faq details {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+}
+
+.faq summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--navy-dark);
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.faq summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq summary::after {
+  content: '+';
+  color: var(--teal);
+  font-weight: 800;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.faq details[open] summary::after {
+  content: '−';
+}
+
+.faq p {
+  margin: 12px 0 0;
+  color: var(--text-muted);
+  font-size: 15px;
+}
+
+/* ---------- Footer ---------- */
+.site-footer {
+  margin-top: 40px;
+  background: var(--navy-dark);
+  color: rgba(255, 255, 255, 0.78);
+  padding: 48px 0 24px;
+}
+
+.site-footer-inner {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1.2fr 1fr;
+  gap: 32px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.footer-col h3 {
+  color: #fff;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin: 0 0 14px;
+}
+
+.footer-col p {
+  margin: 0 0 8px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.footer-col a:hover {
+  color: var(--teal-light);
+}
+
+.footer-brand {
+  display: block;
+  color: #fff;
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+.footer-legal {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.site-footer .hours-list dt {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.site-footer .hours-list dd {
+  color: #fff;
+}
+
+.footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.footer-copy {
+  margin: 20px 0 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+
+@media (max-width: 1040px) {
+  .card-grid.cols-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .steps {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .site-footer-inner {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 28px;
+  }
+  .header-phone {
+    display: none;
+  }
+}
+
+@media (max-width: 860px) {
+  .page-title {
+    font-size: 27px;
+  }
+
+  .card-grid.cols-2,
+  .card-grid.cols-3,
+  .card-grid.cols-4 {
+    grid-template-columns: 1fr;
+  }
+
+  .steps {
+    grid-template-columns: 1fr;
+  }
+
+  /* Every two-column band collapses to a single stacked column: at 390px the
+     "1fr auto" tracks squeezed the text into a ~120px ribbon. */
+  .acute-band,
+  .sokolov-callout,
+  .founder-band,
+  .service-row {
+    grid-template-columns: 1fr;
+  }
+
+  .acute-band-actions {
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .founder-band {
+    justify-items: center;
+    text-align: center;
+    padding: 28px 20px;
+  }
+
+  .founder-band p {
+    text-align: left;
+  }
+
+  .service-row-side {
+    border-left: none;
+    border-top: 1px solid var(--border);
+    padding-left: 0;
+    padding-top: 18px;
+  }
+
+  .service-row.acute .service-row-side {
+    border-top-color: rgba(229, 72, 77, 0.3);
+  }
+
+  .insurance-facts {
+    grid-template-columns: 1fr;
+  }
+
+  .team-card {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
+
+  .site-footer {
+    /* Clear the fixed tab bar so the last footer line is not trapped behind it. */
+    padding-bottom: calc(24px + var(--tab-bar-height));
+  }
+
+  .site-footer-inner {
+    grid-template-columns: 1fr;
+    gap: 26px;
+  }
+
+  .footer-links {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px 18px;
+    padding: 0;
+    color: inherit;
+  }
+}
+
+/* The insurance table has three text-heavy columns; at 390px letting it shrink
+   to 100% squeezed each cell to a few characters per line. Give it a floor and
+   let .table-scroll do its job. */
+@media (max-width: 860px) {
+  table.price-table {
+    min-width: 640px;
+  }
+}
+
+/* The logo asset is a photograph of the practice sign, not a transparent
+   wordmark. Framing it makes that read as deliberate instead of looking like a
+   PNG that lost its background. */
+.hero-logo {
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: 0 18px 40px rgba(13, 58, 99, 0.16);
 }

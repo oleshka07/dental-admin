@@ -98,3 +98,79 @@ export function ChatIcon({ filled, size = 24 }: IconProps) {
     </svg>
   );
 }
+
+/* ---- Feature / content icons ----
+   These replace the emoji that used to sit in headings and card titles. Emoji
+   render differently on every platform and the ZWJ sequence in 👩‍⚕️ was already
+   breaking apart into two glyphs in Chromium. */
+
+export function ShieldIcon({ size = 24 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3.2 5 6v5.4c0 4.2 2.9 7.6 7 8.9 4.1-1.3 7-4.7 7-8.9V6l-7-2.8Z" />
+      <path d="m9 12 2.2 2.2L15.4 10" />
+    </svg>
+  );
+}
+
+export function HeartHandIcon({ size = 24 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 8.6c1-1.9 4.6-2 5.6.4.9 2.2-1.4 4.4-5.6 7-4.2-2.6-6.5-4.8-5.6-7 1-2.4 4.6-2.3 5.6-.4Z" />
+      <path d="M3.5 14.5v4.2M20.5 14.5v4.2" />
+    </svg>
+  );
+}
+
+export function BoltIcon({ size = 24 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M13.2 2.8 5.6 13.2h5.1l-.9 8 7.6-10.4h-5.1l.9-8Z" />
+    </svg>
+  );
+}
+
+export function TeamIcon({ size = 24 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="9" cy="8.5" r="3.1" />
+      <path d="M3.5 19.5c0-3 2.5-4.8 5.5-4.8s5.5 1.8 5.5 4.8" />
+      <path d="M16.2 6.2a3 3 0 0 1 0 5.9M17.6 14.9c1.9.5 3.4 1.9 3.4 4.1" />
+    </svg>
+  );
+}
+
+export function PhoneIcon({ size = 24 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6.2 3.8h3l1.4 3.6-2 1.4a11.4 11.4 0 0 0 5.6 5.6l1.4-2 3.6 1.4v3a1.8 1.8 0 0 1-2 1.8C10.6 18.1 5.9 13.4 4.4 5.8a1.8 1.8 0 0 1 1.8-2Z" />
+    </svg>
+  );
+}
+
+export function ClockIcon({ size = 24 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="8.4" />
+      <path d="M12 7.4V12l3.1 1.9" />
+    </svg>
+  );
+}
+
+export function AlertIcon({ size = 24 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 4.2 21 19.4H3L12 4.2Z" />
+      <path d="M12 10v3.6M12 16.6h.01" />
+    </svg>
+  );
+}
+
+export function CalendarIcon({ size = 24 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3.6" y="5.4" width="16.8" height="15" rx="2.4" />
+      <path d="M3.6 10h16.8M8.4 3.4v3.4M15.6 3.4v3.4" />
+    </svg>
+  );
+}

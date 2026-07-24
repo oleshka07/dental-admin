@@ -1,39 +1,72 @@
-import { FOUNDER } from '@/lib/content';
 import BookButton from '@/components/BookButton';
+import { CLINIC, FOUNDER } from '@/lib/content';
 
-export const metadata = { title: 'MDDr. Dmytro Galaktionov — Galactic Dent' };
+export const metadata = {
+  title: 'MDDr. Dmytro Galaktionov | Galactic Dent Karlovy Vary',
+  description:
+    'Zakladatel a hlavní stomatolog Galactic Dent. Dlouholetá praxe v Sokolově, člen České stomatologické komory, gnatologie a implantologie.',
+};
 
 export default function FounderPage() {
   return (
-    <div className="container section">
-      <h1 className="section-title">{FOUNDER.name}</h1>
-      <p className="section-subtitle">{FOUNDER.title}</p>
-
-      <div className="callout" style={{ marginBottom: 32 }}>
-        <p style={{ margin: 0, fontSize: 16 }}>{FOUNDER.bio}</p>
+    <div className="section container">
+      <div className="founder-band">
+        <div className="founder-portrait" aria-hidden="true">
+          DG
+        </div>
+        <div>
+          <h1 className="page-title" style={{ marginBottom: 6 }}>
+            {FOUNDER.name}
+          </h1>
+          <p className="founder-role">{FOUNDER.title}</p>
+          <p>{FOUNDER.short}</p>
+        </div>
       </div>
 
-      <h2 style={{ fontSize: 22 }}>Co pacienti oceňují nejvíce</h2>
-      <div className="card-grid" style={{ marginBottom: 32 }}>
-        {FOUNDER.highlights.map((h) => (
-          <div className="card" key={h}>
-            <p style={{ margin: 0 }}>{h}</p>
-          </div>
-        ))}
-      </div>
+      <section className="section">
+        <div className="prose">
+          {FOUNDER.bio.map((para) => (
+            <p key={para.slice(0, 40)}>{para}</p>
+          ))}
+        </div>
+      </section>
 
-      <h2 style={{ fontSize: 22 }}>Odbornost a vzdělávání</h2>
-      <div className="card">
-        <ul style={{ margin: 0, paddingLeft: 20, color: 'var(--text-muted)' }}>
+      <section className="section">
+        <h2 className="section-title">Co pacienti zmiňují nejčastěji</h2>
+        <div className="card-grid cols-3">
+          {FOUNDER.highlights.map((h) => (
+            <div className="card" key={h.title}>
+              <h3>{h.title}</h3>
+              <p>{h.text}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="section">
+        <h2 className="section-title">Odbornost a vzdělávání</h2>
+        <ul className="reason-list">
           <li>Člen České stomatologické komory (ČSK)</li>
-          <li>Pravidelné vzdělávání v gnatologii a okluzi</li>
-          <li>Kurzy estetické stomatologie a implantologie u předních evropských lektorů</li>
-          <li>Dlouholetá praxe v ordinaci v Sokolově před založením Galactic Dent</li>
+          <li>Gnatologie a okluze — pravidelné kurzy, protože na skusu stojí životnost každé náhrady</li>
+          <li>Estetická stomatologie a implantologie u předních evropských lektorů</li>
+          <li>Dlouholetá praxe v ordinaci Léčebně preventivní zařízení s.r.o. v Sokolově</li>
         </ul>
-      </div>
+      </section>
 
-      <div style={{ marginTop: 40, textAlign: 'center' }}>
-        <BookButton>Objednat se k MDDr. Galaktionovovi</BookButton>
+      <div className="callout sokolov-callout">
+        <div>
+          <h2 className="section-title" style={{ marginBottom: 8 }}>
+            Objednat se k MDDr. Galaktionovovi
+          </h2>
+          <p>
+            Online kdykoli, telefonicky v ordinačních hodinách na{' '}
+            <a className="inline-link" href={`tel:${CLINIC.phoneHref}`}>
+              {CLINIC.phone}
+            </a>
+            .
+          </p>
+        </div>
+        <BookButton>Objednat se online</BookButton>
       </div>
     </div>
   );
