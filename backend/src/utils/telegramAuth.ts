@@ -138,9 +138,11 @@ export function verifyInitData(initData: string, botToken: string): VerifiedInit
   const hash = safeDecode(rawHash);
   if (!/^[0-9a-f]{64}$/i.test(hash)) return null;
 
-  // `hash` is the signature itself; `signature` is Telegram's separate Ed25519
-  // field for third-party verification. Neither belongs in the check string.
-  const signed = pairs.filter(([key]) => key !== 'hash' && key !== 'signature');
+  // Only `hash` is excluded — it *is* the signature being checked. Everything
+  // else Telegram sends is part of the signed payload, including `signature`
+  // (its separate Ed25519 field). Confirmed against production: real Telegram
+  // initData only verifies when `signature` is kept in the check string.
+  const signed = pairs.filter(([key]) => key !== 'hash');
 
   // A query string has two legitimate decodings that differ only in how '+' is
   // treated: RFC 3986 percent-decoding keeps it literal, while
