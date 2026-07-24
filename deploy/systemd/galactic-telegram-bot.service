@@ -1,0 +1,17 @@
+[Unit]
+Description=Galactic Dent Telegram bot
+After=network.target galactic-backend.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/galactic-dent/telegram-bot
+EnvironmentFile=/opt/galactic-dent/telegram-bot/.env
+ExecStart=/usr/bin/node dist/index.js
+Restart=always
+RestartSec=3
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

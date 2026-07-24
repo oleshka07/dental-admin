@@ -5,7 +5,7 @@ export default function HomeScreen({ patient, onNavigate }: { patient: Patient |
   return (
     <div className="screen">
       <div className="app-header">
-        <img src="/logo.png" alt="" />
+        <img src={`${import.meta.env.BASE_URL}logo.png`} alt="" />
         <h1>Galactic Dent</h1>
       </div>
       <h2 className="screen-title">Ahoj{patient ? `, ${patient.fullName.split(' ')[0]}` : ''} 👋</h2>

@@ -18,7 +18,12 @@ async function main() {
     },
   });
 
-  await app.register(cors, { origin: true });
+  // In production every browser client (site/admin/Mini App) is served from
+  // the same domain via nginx path routing, so same-origin requests aren't
+  // even subject to CORS — this only needs to admit the handful of origins
+  // that legitimately call the API cross-origin (local dev on other ports).
+  const corsOrigin = process.env.CORS_ORIGIN?.split(',').map((o) => o.trim()) ?? true;
+  await app.register(cors, { origin: corsOrigin });
 
   app.get('/health', async () => ({ status: 'ok' }));
 

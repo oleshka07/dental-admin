@@ -1,0 +1,108 @@
+name: Deploy Galactic Dent
+
+# Change this to your production branch once you set one up (e.g. `main`
+# after switching to a PR-based flow) — right now this IS the only branch,
+# so every push here deploys.
+on:
+  push:
+    branches:
+      - claude/dental-booking-service-aorx3i
+  workflow_dispatch: {}
+
+env:
+  DOMAIN: galactic.swipescape.eu
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build backend
+        working-directory: backend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Build telegram-bot
+        working-directory: telegram-bot
+        run: |
+          npm ci
+          npm run build
+
+      - name: Build site (Next.js static export)
+        working-directory: site
+        env:
+          NEXT_PUBLIC_BACKEND_URL: https://${{ env.DOMAIN }}/api
+        run: |
+          npm ci
+          npm run build
+
+      - name: Build admin-web
+        working-directory: admin-web
+        env:
+          VITE_BACKEND_URL: https://${{ env.DOMAIN }}/api
+        run: |
+          npm ci
+          npm run build
+
+      - name: Build telegram-app
+        working-directory: telegram-app
+        env:
+          VITE_BACKEND_URL: https://${{ env.DOMAIN }}/api
+        run: |
+          npm ci
+          npm run build
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Ensure remote app directory exists
+        run: |
+          ssh -i ~/.ssh/deploy_key "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "mkdir -p /opt/galactic-dent/backend /opt/galactic-dent/telegram-bot /opt/galactic-dent/site /opt/galactic-dent/admin-web /opt/galactic-dent/telegram-app /opt/galactic-dent/deploy"
+
+      - name: Sync build output to server
+        run: |
+          SSH="ssh -i ~/.ssh/deploy_key"
+          DEST="${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}"
+
+          # --delete is scoped to dist/prisma/out subdirectories only — it
+          # never touches backend/.env or telegram-bot/.env, which live one
+          # level up and are never part of these source trees.
+          rsync -az --delete -e "$SSH" backend/dist/ "$DEST:/opt/galactic-dent/backend/dist/"
+          rsync -az --delete -e "$SSH" backend/prisma/ "$DEST:/opt/galactic-dent/backend/prisma/"
+          rsync -az -e "$SSH" backend/package.json backend/package-lock.json "$DEST:/opt/galactic-dent/backend/"
+
+          rsync -az --delete -e "$SSH" telegram-bot/dist/ "$DEST:/opt/galactic-dent/telegram-bot/dist/"
+          rsync -az -e "$SSH" telegram-bot/package.json telegram-bot/package-lock.json "$DEST:/opt/galactic-dent/telegram-bot/"
+
+          rsync -az --delete -e "$SSH" site/out/ "$DEST:/opt/galactic-dent/site/out/"
+          rsync -az --delete -e "$SSH" admin-web/dist/ "$DEST:/opt/galactic-dent/admin-web/dist/"
+          rsync -az --delete -e "$SSH" telegram-app/dist/ "$DEST:/opt/galactic-dent/telegram-app/dist/"
+
+          rsync -az -e "$SSH" deploy/ "$DEST:/opt/galactic-dent/deploy/"
+
+      - name: Run remote deploy script
+        run: |
+          ssh -i ~/.ssh/deploy_key "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "DOMAIN='${{ env.DOMAIN }}' \
+             POSTGRES_PASSWORD='${{ secrets.POSTGRES_PASSWORD }}' \
+             TELEGRAM_BOT_TOKEN='${{ secrets.TELEGRAM_BOT_TOKEN }}' \
+             LETSENCRYPT_EMAIL='${{ secrets.LETSENCRYPT_EMAIL }}' \
+             ANTHROPIC_API_KEY='${{ secrets.ANTHROPIC_API_KEY }}' \
+             ANTHROPIC_MODEL='${{ secrets.ANTHROPIC_MODEL }}' \
+             STAFF_CHAT_ID='${{ secrets.STAFF_CHAT_ID }}' \
+             bash /opt/galactic-dent/deploy/remote-deploy.sh"
+
+      - name: Clean up SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key

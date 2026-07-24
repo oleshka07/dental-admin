@@ -1,0 +1,17 @@
+[Unit]
+Description=Galactic Dent backend API
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/galactic-dent/backend
+EnvironmentFile=/opt/galactic-dent/backend/.env
+ExecStart=/usr/bin/node dist/index.js
+Restart=always
+RestartSec=3
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

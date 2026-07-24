@@ -41,7 +41,7 @@ export default function RegisterScreen({
   return (
     <div className="screen">
       <div className="app-header">
-        <img src="/logo.png" alt="" />
+        <img src={`${import.meta.env.BASE_URL}logo.png`} alt="" />
         <h1>Galactic Dent</h1>
       </div>
       <h2 className="screen-title">Vítejte 👋</h2>
