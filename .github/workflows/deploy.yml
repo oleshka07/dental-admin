@@ -140,26 +140,33 @@ jobs:
           curl -s "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getMe" | \
             sed -E 's/"id":[0-9]+/"id":REDACTED/'
 
-      - name: Diagnose Mini App session verification against production
-        if: always()
+      # End-to-end guard against the exact regression that broke the Mini App:
+      # the payload is signed the way real Telegram signs it — `signature` is a
+      # normal field inside the data-check-string, only `hash` is left out — and
+      # POSTed to the live API. /session is read-only, so this creates nothing.
+      # A non-200 here means production would reject every real Telegram user.
+      - name: Verify Mini App session auth against production
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         run: |
           node --input-type=module <<'EOF'
           import crypto from 'node:crypto';
 
-          const botToken = process.env.TELEGRAM_BOT_TOKEN;
+          const botToken = process.env.TELEGRAM_BOT_TOKEN.trim();
           const user = { id: 999001, first_name: 'Jana', last_name: 'Testovací', language_code: 'cs' };
-          const params = {
-            query_id: 'AAHdiagnostic',
+          const fields = {
+            // Real query_id values are base64 and routinely contain '+', which
+            // is the character that distinguishes RFC 3986 decoding from
+            // form-urlencoded decoding. Keep one here so the check covers it.
+            query_id: 'AAH+diag/nostic=',
             user: JSON.stringify(user),
             auth_date: String(Math.floor(Date.now() / 1000)),
+            signature: crypto.randomBytes(64).toString('base64url'),
           };
-          const dataCheckString = Object.keys(params).sort().map((k) => `${k}=${params[k]}`).join('\n');
+          const dataCheckString = Object.keys(fields).sort().map((k) => `${k}=${fields[k]}`).join('\n');
           const secretKey = crypto.createHmac('sha256', 'WebAppData').update(botToken).digest();
           const hash = crypto.createHmac('sha256', secretKey).update(dataCheckString).digest('hex');
-          const signature = crypto.randomBytes(64).toString('base64url');
-          const initData = new URLSearchParams({ ...params, hash, signature }).toString();
+          const initData = new URLSearchParams({ ...fields, hash }).toString();
 
           const res = await fetch('https://${{ env.DOMAIN }}/api/telegram-app/session', {
             method: 'POST',
@@ -168,6 +175,10 @@ jobs:
           });
           const text = await res.text();
           console.log(`status: ${res.status}`);
-          console.log(`content-type: ${res.headers.get('content-type')}`);
           console.log(`body: ${text}`);
+          if (res.status !== 200) {
+            console.error('Mini App session auth is BROKEN in production — real Telegram users will see "Nepodařilo se ověřit relaci".');
+            process.exit(1);
+          }
+          console.log('OK — production accepts a genuinely-shaped Telegram signature.');
           EOF
