@@ -120,12 +120,22 @@ done
 echo "backend=${BACKEND_STATE} bot=${BOT_STATE} nginx=$(systemctl is-active nginx || true)"
 
 log "End-to-end check — backend directly, and site+API through nginx over HTTPS (matching what a real visitor hits)..."
-BACKEND_CODE=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/health || echo 000)
-SITE_CODE=$(curl -sk -o /dev/null -w '%{http_code}' --resolve "${DOMAIN}:443:127.0.0.1" "https://${DOMAIN}/" || echo 000)
-API_CODE=$(curl -sk -o /dev/null -w '%{http_code}' --resolve "${DOMAIN}:443:127.0.0.1" "https://${DOMAIN}/api/health" || echo 000)
+# Retried on purpose: systemd marks a Type=simple service "active" as soon as
+# the process spawns, not once Fastify has actually bound to the port — a
+# single immediate curl can lose that race even though the service is fine.
+BACKEND_CODE=000
+SITE_CODE=000
+API_CODE=000
+for i in $(seq 1 8); do
+  BACKEND_CODE=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/health || echo 000)
+  SITE_CODE=$(curl -sk -o /dev/null -w '%{http_code}' --resolve "${DOMAIN}:443:127.0.0.1" "https://${DOMAIN}/" || echo 000)
+  API_CODE=$(curl -sk -o /dev/null -w '%{http_code}' --resolve "${DOMAIN}:443:127.0.0.1" "https://${DOMAIN}/api/health" || echo 000)
+  [ "$BACKEND_CODE" = "200" ] && [ "$SITE_CODE" = "200" ] && [ "$API_CODE" = "200" ] && break
+  sleep 2
+done
 echo "backend -> ${BACKEND_CODE}, site -> ${SITE_CODE}, api -> ${API_CODE}"
 
-if [ "$BACKEND_STATE" != "active" ] || [ "$BOT_STATE" != "active" ] || [ "$SITE_CODE" != "200" ] || [ "$API_CODE" != "200" ]; then
+if [ "$BACKEND_STATE" != "active" ] || [ "$BOT_STATE" != "active" ] || [ "$BACKEND_CODE" != "200" ] || [ "$SITE_CODE" != "200" ] || [ "$API_CODE" != "200" ]; then
   log "Something's wrong — dumping diagnostics:"
   echo "--- journalctl galactic-backend (last 60 lines) ---"
   journalctl -u galactic-backend -n 60 --no-pager || true
