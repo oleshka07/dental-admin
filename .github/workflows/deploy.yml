@@ -181,18 +181,34 @@ jobs:
           const signature = crypto.randomBytes(64).toString('base64url');
           const initData = new URLSearchParams({ ...params, hash, signature }).toString();
 
-          const res = await fetch('https://${{ env.DOMAIN }}/api/telegram-app/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              initData,
-              fullName: 'Register Diagnostic',
-              phone: `+420${600000000 + uid}`,
-              language: 'CZ',
-            }),
-          });
-          const text = await res.text();
-          console.log(`status: ${res.status}`);
-          console.log(`content-type: ${res.headers.get('content-type')}`);
-          console.log(`body: ${text}`);
+          const phone = `+420${600000000 + uid}`;
+
+          async function register(uid, phone) {
+            const user = { id: uid, first_name: 'Register', last_name: 'Diagnostic', language_code: 'cs' };
+            const params = {
+              query_id: 'AAHregdiag',
+              user: JSON.stringify(user),
+              auth_date: String(Math.floor(Date.now() / 1000)),
+            };
+            const dataCheckString = Object.keys(params).sort().map((k) => `${k}=${params[k]}`).join('\n');
+            const secretKey = crypto.createHmac('sha256', 'WebAppData').update(botToken).digest();
+            const hash = crypto.createHmac('sha256', secretKey).update(dataCheckString).digest('hex');
+            const signature = crypto.randomBytes(64).toString('base64url');
+            const initData = new URLSearchParams({ ...params, hash, signature }).toString();
+            const res = await fetch('https://${{ env.DOMAIN }}/api/telegram-app/register', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ initData, fullName: 'Register Diagnostic', phone, language: 'CZ' }),
+            });
+            const text = await res.text();
+            console.log(`status: ${res.status}`);
+            console.log(`content-type: ${res.headers.get('content-type')}`);
+            console.log(`body: ${text}`);
+          }
+
+          console.log('--- fresh registration (unique phone, unique telegram id) ---');
+          await register(uid, phone);
+
+          console.log('--- SAME phone, DIFFERENT telegram id (simulates a duplicate-phone conflict) ---');
+          await register(uid + 1, phone);
           EOF
