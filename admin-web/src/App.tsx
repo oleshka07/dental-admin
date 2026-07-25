@@ -2,8 +2,9 @@ import { useState } from 'react';
 import Calendar from './pages/Calendar';
 import SlotTemplates from './pages/SlotTemplates';
 import Appointments from './pages/Appointments';
+import Patients from './pages/Patients';
 
-type Tab = 'calendar' | 'templates' | 'appointments';
+type Tab = 'calendar' | 'templates' | 'appointments' | 'patients';
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('calendar');
@@ -21,10 +22,14 @@ export default function App() {
         <button className={tab === 'appointments' ? 'active' : ''} onClick={() => setTab('appointments')}>
           Návštěvy
         </button>
+        <button className={tab === 'patients' ? 'active' : ''} onClick={() => setTab('patients')}>
+          Pacienti
+        </button>
       </div>
       {tab === 'calendar' && <Calendar />}
       {tab === 'templates' && <SlotTemplates />}
       {tab === 'appointments' && <Appointments />}
+      {tab === 'patients' && <Patients />}
     </div>
   );
 }

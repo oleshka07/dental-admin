@@ -90,6 +90,13 @@ bot.start(async (ctx) => {
   );
 });
 
+// Reports the caller's own Telegram id. Needed to point the demo dataset at a
+// real account (DEMO_TELEGRAM_ID) without hunting for a third-party id bot, and
+// generally useful when matching a Telegram user to a patient record by hand.
+bot.command('whoami', async (ctx) => {
+  await ctx.reply(`Telegram ID: ${ctx.from.id}`);
+});
+
 bot.action(/^lang:(CZ|UA)$/, async (ctx) => {
   const session = getSession(ctx.from.id);
   session.lang = ctx.match[1] as Lang;

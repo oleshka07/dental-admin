@@ -26,6 +26,14 @@ export interface Patient {
   fullName: string;
   phone: string;
   language: string;
+  email?: string | null;
+  telegramId?: string | null;
+  insuranceProvider?: string;
+  notes?: string | null;
+  noShowCount?: number;
+  createdAt?: string;
+  /** Set by the demo seed. Real patients never have it. */
+  isDemo?: boolean;
 }
 
 export interface Appointment {
@@ -84,6 +92,11 @@ export const api = {
     request<AvailableSlot[]>(
       `/api/availability?from=${from}&to=${to}${visitTypeId ? `&visitTypeId=${visitTypeId}` : ''}`,
     ),
+
+  listPatients: (search?: string) =>
+    request<Patient[]>(`/api/patients${search ? `?search=${encodeURIComponent(search)}` : ''}`),
+  getPatient: (id: string) =>
+    request<Patient & { appointments: Appointment[] }>(`/api/patients/${id}`),
 
   listAppointments: (params: Record<string, string>) =>
     request<Appointment[]>(`/api/appointments?${new URLSearchParams(params).toString()}`),

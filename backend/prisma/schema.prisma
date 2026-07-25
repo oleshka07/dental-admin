@@ -80,6 +80,11 @@ model Patient {
   consentHealthDataAt   DateTime?
   notes                 String?
   noShowCount           Int       @default(0)
+  // Marks a record created by the demo seed. Everything the demo generates
+  // hangs off a patient, so this single flag is enough to find and delete the
+  // whole set later (see src/scripts/purgeDemo.ts). Real patients are never
+  // written with it set.
+  isDemo                Boolean   @default(false)
   createdAt             DateTime  @default(now())
 
   appointments      Appointment[]

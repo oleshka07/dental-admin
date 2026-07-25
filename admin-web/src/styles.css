@@ -135,3 +135,40 @@ th, td {
   margin-bottom: 12px;
   flex-wrap: wrap;
 }
+
+/* ---- Demo data marking ---------------------------------------------------
+   Everything the demo seed creates hangs off a patient with isDemo=true, so a
+   badge on the patient name is enough to tell demo rows from real ones at a
+   glance — important once real patients start arriving alongside the demo set. */
+.badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 2px 6px;
+  border-radius: 999px;
+  vertical-align: middle;
+}
+
+.badge-demo {
+  background: #fde68a;
+  color: #92400e;
+}
+
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.hint {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.error-text {
+  font-size: 13px;
+  color: #b91c1c;
+}
