@@ -4,9 +4,11 @@
  * Run with: npm run demo:purge          (source checkout)
  *           node dist/scripts/purgeDemo.js   (on the server)
  *
- * The only thing that identifies demo data is `Patient.isDemo`. Every other
- * demo row is reachable from a demo patient, so deleting children-then-parents
- * for exactly that set is complete and cannot touch a real record.
+ * Two flags identify demo data:
+ *   - `Patient.isDemo` — the generated patients, and everything hanging off them
+ *   - `Appointment.isDemo` — also covers the showcase history attached to a
+ *     REAL patient (the one who owns DEMO_TELEGRAM_ID), whose own record must
+ *     survive this purge even though those visits must not
  */
 import { prisma } from '../db';
 
@@ -22,13 +24,18 @@ export async function purgeDemo(): Promise<{
   });
   const ids = demoPatients.map((p) => p.id);
 
+  // Demo appointments are deleted even when no demo patients exist, because
+  // they may be attached to a real one.
+  const appointments = await prisma.appointment.deleteMany({
+    where: { OR: [{ isDemo: true }, { patientId: { in: ids } }] },
+  });
+
   if (ids.length === 0) {
-    return { patients: 0, appointments: 0, waitlistEntries: 0, conversationLogs: 0 };
+    return { patients: 0, appointments: appointments.count, waitlistEntries: 0, conversationLogs: 0 };
   }
 
-  // Children first — the foreign keys are restrict-by-default, so deleting a
-  // patient with appointments still attached would fail.
-  const appointments = await prisma.appointment.deleteMany({ where: { patientId: { in: ids } } });
+  // Remaining children first — the foreign keys are restrict-by-default, so
+  // deleting a patient with rows still attached would fail.
   const waitlistEntries = await prisma.waitlistEntry.deleteMany({ where: { patientId: { in: ids } } });
   const conversationLogs = await prisma.conversationLog.deleteMany({ where: { patientId: { in: ids } } });
   const patients = await prisma.patient.deleteMany({ where: { isDemo: true } });

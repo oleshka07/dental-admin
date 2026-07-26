@@ -155,6 +155,12 @@ model Appointment {
   isAcute     Boolean           @default(false)
   sourceChannel SourceChannel
 
+  // Set on every appointment the demo seed creates. Needed in addition to
+  // Patient.isDemo because the showcase history is attached to whichever
+  // patient owns DEMO_TELEGRAM_ID — and that is usually a REAL patient, whose
+  // own record must survive the purge even though these visits must not.
+  isDemo            Boolean   @default(false)
+
   triageAnswers     Json?
   photoRefs         Json?
   createdAt         DateTime  @default(now())

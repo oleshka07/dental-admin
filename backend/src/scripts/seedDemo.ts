@@ -191,18 +191,31 @@ async function main() {
     patients.push(patient);
   }
 
-  // Lets the founder open the Mini App from their own Telegram account and see
-  // a populated history rather than a first-run registration screen.
+  /**
+   * The account that will be used to demonstrate the Mini App.
+   *
+   * If DEMO_TELEGRAM_ID already belongs to somebody — which it usually does,
+   * because whoever runs the demo registered through the Mini App at some
+   * point — we do NOT take the id away from them. Their real record stays
+   * exactly as it is and simply receives the demo visit history, which is
+   * flagged on the appointments themselves so `demo:purge` can take it back
+   * out without touching the patient.
+   *
+   * Only when the id is unknown do we hand it to a generated patient.
+   */
+  let showcase = patients[0];
   if (boundTelegramId) {
-    const clash = await prisma.patient.findUnique({ where: { telegramId: boundTelegramId } });
-    if (clash && !clash.isDemo) {
-      console.warn(
-        `DEMO_TELEGRAM_ID ${boundTelegramId} already belongs to a real patient (${clash.fullName}); leaving it alone.`,
+    const existing = await prisma.patient.findUnique({ where: { telegramId: boundTelegramId } });
+    if (existing) {
+      showcase = existing;
+      console.log(
+        `Telegram id ${boundTelegramId} already belongs to "${existing.fullName}"` +
+          `${existing.isDemo ? ' (demo)' : ' (real patient — record left untouched)'}; ` +
+          'giving that account the demo visit history.',
       );
     } else {
-      if (clash) await prisma.patient.update({ where: { id: clash.id }, data: { telegramId: null } });
-      await prisma.patient.update({ where: { id: patients[0].id }, data: { telegramId: boundTelegramId } });
-      console.log(`Bound demo patient "${patients[0].fullName}" to Telegram id ${boundTelegramId}.`);
+      await prisma.patient.update({ where: { id: showcase.id }, data: { telegramId: boundTelegramId } });
+      console.log(`Bound demo patient "${showcase.fullName}" to Telegram id ${boundTelegramId}.`);
     }
   }
 
@@ -214,10 +227,10 @@ async function main() {
   const acuteId = baseline.acute.id;
   const created: { status: string }[] = [];
 
-  async function book(slot: SlotRef, when: 'past' | 'future') {
+  async function book(slot: SlotRef, when: 'past' | 'future', forPatient?: Patient) {
     const visitTypeId = pick(slot.visitTypeIds.length ? slot.visitTypeIds : [baseline.checkup.id]);
     const isAcute = visitTypeId === acuteId;
-    const patient = pick(patients);
+    const patient = forPatient ?? pick(patients);
 
     const status = when === 'past'
       ? (chance(0.82) ? 'DONE' : chance(0.5) ? 'NO_SHOW' : 'CANCELLED')
@@ -237,6 +250,9 @@ async function main() {
         status: status as never,
         isAcute,
         sourceChannel,
+        // Flagged on the row itself, not just inferred from the patient: the
+        // showcase history below may belong to a real patient.
+        isDemo: true,
         triageAnswers: isAcute ? pick(DEMO_TRIAGE) : undefined,
         createdAt: new Date(slot.date.getTime() - (1 + Math.floor(rand() * 10)) * DAY_MS),
         confirmedAt: status === 'CONFIRMED' || status === 'DONE' ? new Date(slot.date.getTime() - DAY_MS) : null,
@@ -244,6 +260,15 @@ async function main() {
     });
     created.push({ status });
   }
+
+  // Reserve the showcase account's own history first, so it is guaranteed to
+  // have something to show rather than depending on a random draw. Taken off
+  // the front of each pool so the slots cannot then be double-booked below.
+  const showcasePast = past.splice(past.length - 4, 4); // the four most recent past slots
+  const showcaseFuture = future.splice(2, 2); // two upcoming ones
+  for (const slot of showcasePast) await book(slot, 'past', showcase);
+  for (const slot of showcaseFuture) await book(slot, 'future', showcase);
+  console.log(`Showcase account "${showcase.fullName}" got ${showcasePast.length + showcaseFuture.length} visits.`);
 
   // A finished week looks busy; roughly four visits in five actually happened.
   for (const slot of past) {
