@@ -204,6 +204,34 @@ async function main() {
    * Only when the id is unknown do we hand it to a generated patient.
    */
   let showcase = patients[0];
+
+  // DEMO_SHOWCASE_LATEST picks the most recently registered real Telegram user
+  // instead of naming an id. That keeps a personal Telegram id out of this
+  // public repository, which is the only reason it exists.
+  //
+  // Pre-launch only: before go-live the newest real account is whoever set the
+  // system up, but once actual patients register it would be one of them. The
+  // CI step that sets this is a deliberate, one-off trigger for exactly that
+  // reason — after go-live, pass an explicit DEMO_TELEGRAM_ID instead.
+  if (!boundTelegramId && process.env.DEMO_SHOWCASE_LATEST === '1') {
+    const latest = await prisma.patient.findFirst({
+      where: { isDemo: false, telegramId: { not: null } },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (latest) {
+      showcase = latest;
+      console.log(
+        `DEMO_SHOWCASE_LATEST: using the newest real Telegram-registered patient "${latest.fullName}" ` +
+          'as the showcase account. Their record is left untouched; only demo visits are added.',
+      );
+    } else {
+      console.warn(
+        'DEMO_SHOWCASE_LATEST was set but no real Telegram-registered patient exists yet. ' +
+          'Opening the Mini App will still show the registration screen — register once, then reseed.',
+      );
+    }
+  }
+
   if (boundTelegramId) {
     const existing = await prisma.patient.findUnique({ where: { telegramId: boundTelegramId } });
     if (existing) {

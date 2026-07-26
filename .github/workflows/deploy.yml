@@ -125,19 +125,40 @@ jobs:
              STAFF_CHAT_ID='${{ secrets.STAFF_CHAT_ID }}' \
              bash /opt/galactic-dent/deploy/remote-deploy.sh"
 
-      # Only ever runs from a manual "Run workflow" with demo_data set — a plain
-      # push must never touch the dataset. Both scripts are compiled into
-      # backend/dist by the build above, so they run under the server's
-      # production-only dependencies without ts-node.
+      # Never runs on an ordinary push. Two deliberate triggers:
+      #   * "Run workflow" with demo_data set to seed/purge
+      #   * a commit message containing [demo-seed] or [demo-purge] — the same
+      #     explicit opt-in, through the one channel available to an automation
+      #     that can push but has no workflow_dispatch permission
+      #
+      # Both scripts are compiled into backend/dist by the build above, so they
+      # run under the server's production-only dependencies without ts-node.
+      - name: Decide whether to touch the demo dataset
+        id: demo
+        run: |
+          ACTION=none
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            ACTION="${{ inputs.demo_data }}"
+          else
+            MSG=$(git log -1 --pretty=%B)
+            case "$MSG" in
+              *"[demo-purge]"*) ACTION=purge ;;
+              *"[demo-seed]"*)  ACTION=seed ;;
+            esac
+          fi
+          echo "action=$ACTION" >> "$GITHUB_OUTPUT"
+          echo "Demo dataset action: $ACTION"
+
       - name: Seed or purge the demo dataset
-        if: github.event_name == 'workflow_dispatch' && inputs.demo_data != 'none'
+        if: steps.demo.outputs.action != 'none'
         timeout-minutes: 5
         run: |
-          SCRIPT=$([ "${{ inputs.demo_data }}" = "seed" ] && echo seedDemo || echo purgeDemo)
+          SCRIPT=$([ "${{ steps.demo.outputs.action }}" = "seed" ] && echo seedDemo || echo purgeDemo)
           ssh -i ~/.ssh/deploy_key -o ConnectTimeout=15 -o ServerAliveInterval=15 -o ServerAliveCountMax=3 \
             "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
             "cd /opt/galactic-dent/backend && set -a && . ./.env && set +a && \
-             DEMO_TELEGRAM_ID='${{ inputs.demo_telegram_id }}' node dist/scripts/${SCRIPT}.js"
+             DEMO_TELEGRAM_ID='${{ inputs.demo_telegram_id }}' DEMO_SHOWCASE_LATEST=1 \
+             node dist/scripts/${SCRIPT}.js"
 
       - name: Clean up SSH key
         if: always()
