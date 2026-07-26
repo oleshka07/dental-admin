@@ -140,8 +140,10 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             ACTION="${{ inputs.demo_data }}"
           else
-            MSG=$(git log -1 --pretty=%B)
-            case "$MSG" in
+            # Subject line only, never the body. Reading the whole message once
+            # turned a commit that *described* both markers into a purge.
+            SUBJECT=$(git log -1 --pretty=%s)
+            case "$SUBJECT" in
               *"[demo-purge]"*) ACTION=purge ;;
               *"[demo-seed]"*)  ACTION=seed ;;
             esac
