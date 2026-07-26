@@ -214,10 +214,33 @@ async function main() {
   // CI step that sets this is a deliberate, one-off trigger for exactly that
   // reason — after go-live, pass an explicit DEMO_TELEGRAM_ID instead.
   if (!boundTelegramId && process.env.DEMO_SHOWCASE_LATEST === '1') {
-    const latest = await prisma.patient.findFirst({
+    const candidates = await prisma.patient.findMany({
       where: { isDemo: false, telegramId: { not: null } },
       orderBy: { createdAt: 'desc' },
     });
+
+    // Print the whole candidate list, not just the winner. The first run picked
+    // a leftover diagnostic record that happened to be newer than the intended
+    // account, and the log gave no way to notice that without guessing.
+    // Names and dates only — no Telegram ids, this log is public.
+    if (candidates.length > 1) {
+      console.log(`Telegram-registered real patients, newest first (${candidates.length}):`);
+      for (const c of candidates) {
+        console.log(`  - "${c.fullName}", registered ${c.createdAt.toISOString().slice(0, 16).replace('T', ' ')}`);
+      }
+    }
+
+    // Skip records left behind by diagnostics. One of those ("Register
+    // Diagnostic") was newer than the account the demo was meant for and
+    // silently won the first run. Nothing is deleted — only the choice of which
+    // account receives demo visits changes, and a purge undoes that anyway.
+    const looksLikeTestArtifact = (name: string) => /\b(diagnostic|diagnostika|test|testing|demo|qa)\b/i.test(name);
+    const genuine = candidates.filter((c) => !looksLikeTestArtifact(c.fullName));
+    for (const skipped of candidates.filter((c) => looksLikeTestArtifact(c.fullName))) {
+      console.log(`  (skipping "${skipped.fullName}" — looks like a leftover diagnostic record)`);
+    }
+
+    const latest = genuine[0] ?? candidates[0];
     if (latest) {
       showcase = latest;
       console.log(
