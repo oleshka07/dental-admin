@@ -16,6 +16,14 @@ import { FastifyInstance } from 'fastify';
 const TOKEN_ENDPOINT = 'https://api.elevenlabs.io/v1/convai/conversation/token';
 
 /**
+ * Belt and braces before an upstream error body reaches a log. ElevenLabs does
+ * not echo the key back, but a log line is forever and this costs nothing.
+ */
+function redactSecrets(text: string): string {
+  return text.replace(/\b(sk_|xi-)[A-Za-z0-9_-]{8,}/g, '$1REDACTED');
+}
+
+/**
  * A call button on a public website is a metered expense: ElevenLabs bills per
  * minute, and nothing stops someone from clicking it in a loop. This is a crude
  * per-IP throttle — not a security control, just a cap on how fast a single
@@ -67,9 +75,16 @@ export default async function voiceRoutes(app: FastifyInstance) {
       });
 
       if (!res.ok) {
-        // Never forward ElevenLabs' body — it can echo account details. Log the
-        // status here, hand the client something it can act on.
-        req.log.error({ status: res.status }, 'ElevenLabs refused to issue a conversation token');
+        // Log WHY, not just that it failed. Logging only the status made a real
+        // 502 undiagnosable — "ElevenLabs said no" is not something anyone can
+        // act on. The reason ("agent_not_found", "missing_permissions",
+        // quota exhausted) is not a secret; the key is, and the key is never in
+        // this body. Truncated so an unexpected payload cannot flood the log.
+        const detail = await res.text().catch(() => '');
+        req.log.error(
+          { status: res.status, detail: redactSecrets(detail).slice(0, 300) },
+          'ElevenLabs refused to issue a conversation token',
+        );
         reply.code(502);
         return { error: 'VOICE_UPSTREAM_FAILED' };
       }

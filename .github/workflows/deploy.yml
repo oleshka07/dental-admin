@@ -198,6 +198,48 @@ jobs:
       # normal field inside the data-check-string, only `hash` is left out — and
       # POSTed to the live API. /session is read-only, so this creates nothing.
       # A non-200 here means production would reject every real Telegram user.
+      # Runs only when the voice call is failing and we need to know why.
+      # The three checks separate the causes that all look like one 502 from
+      # the browser: a key that is invalid or lacks the convai scope, an agent
+      # id that points at nothing, and an account that cannot start a call.
+      # Prints status codes and a redacted reason — never the key, and never a
+      # raw body, because this repository is public and so are these logs.
+      - name: Diagnose ElevenLabs voice configuration
+        if: always()
+        env:
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          ELEVENLABS_AGENT_ID: ${{ secrets.ELEVENLABS_AGENT_ID }}
+        run: |
+          if [ -z "$ELEVENLABS_API_KEY" ] || [ -z "$ELEVENLABS_AGENT_ID" ]; then
+            echo "No ElevenLabs credentials configured — skipping."; exit 0
+          fi
+
+          probe() {
+            LABEL="$1"; URL="$2"
+            BODY=$(curl -sS -m 20 -w '\nHTTP_CODE:%{http_code}' -H "xi-api-key: $ELEVENLABS_API_KEY" "$URL" || echo "HTTP_CODE:000")
+            CODE=${BODY##*HTTP_CODE:}
+            # Keep only the machine-readable reason, drop everything else.
+            REASON=$(printf '%s' "${BODY%HTTP_CODE:*}" \
+              | tr -d '\n' \
+              | grep -oE '"(status|message|detail)"[[:space:]]*:[[:space:]]*"[^"]{0,120}"' \
+              | head -3 | tr '\n' ' ')
+            echo "$LABEL -> HTTP $CODE  ${REASON:-（no reason field）}"
+          }
+
+          echo "1. Is the API key itself valid?"
+          probe "   user/subscription " "https://api.elevenlabs.io/v1/user/subscription"
+          echo "2. Does that agent id exist, and may this key see it?"
+          probe "   convai/agents/ID  " "https://api.elevenlabs.io/v1/convai/agents/$ELEVENLABS_AGENT_ID"
+          echo "3. The call our backend actually makes:"
+          probe "   conversation/token" "https://api.elevenlabs.io/v1/convai/conversation/token?agent_id=$ELEVENLABS_AGENT_ID"
+
+          echo
+          echo "Reading the result:"
+          echo "  1 fails 401          -> the API key is wrong or revoked"
+          echo "  1 ok, 2 fails 404    -> ELEVENLABS_AGENT_ID points at no agent"
+          echo "  1 ok, 2 fails 401    -> the key lacks the Conversational AI scope"
+          echo "  1,2 ok, 3 fails      -> agent exists but cannot start a call (credits, or agent not published)"
+
       - name: Verify Mini App session auth against production
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
