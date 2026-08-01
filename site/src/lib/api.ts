@@ -13,6 +13,22 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+/**
+ * A voice call that could not start, with the reason kept intact.
+ *
+ * `status` is ours (429 = our throttle, 502 = ElevenLabs refused, 503 = no
+ * credentials); `reason` is the upstream cause when there is one.
+ */
+export class VoiceError extends Error {
+  constructor(
+    readonly status: number,
+    readonly reason: string,
+  ) {
+    super(`voice session failed: ${status} ${reason}`);
+    this.name = 'VoiceError';
+  }
+}
+
 export interface VisitType {
   id: string;
   name: string;
@@ -54,8 +70,22 @@ export const api = {
     return data.voice === 'configured';
   },
 
-  /** Short-lived, single-conversation token. The API key stays on the server. */
-  voiceSession: () => request<{ conversationToken: string }>('/api/voice/session'),
+  /**
+   * Short-lived, single-conversation token. The API key stays on the server.
+   *
+   * Does not go through `request()`, which flattens every failure into one
+   * Error string. A failed call has genuinely different causes — our own
+   * throttle, an exhausted ElevenLabs quota, a misconfigured agent — and the
+   * caller needs to tell them apart to say anything useful.
+   */
+  voiceSession: async () => {
+    const res = await fetch(`${BASE_URL}/api/voice/session`);
+    if (!res.ok) {
+      const body = (await res.json().catch(() => ({}))) as { error?: string; reason?: string };
+      throw new VoiceError(res.status, body.reason ?? body.error ?? 'UNKNOWN');
+    }
+    return (await res.json()) as { conversationToken: string };
+  },
 
   listVisitTypes: () => request<VisitType[]>('/api/visit-types'),
 

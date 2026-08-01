@@ -241,12 +241,40 @@ jobs:
           echo "3. The call our backend actually makes:"
           probe "   conversation/token" "https://api.elevenlabs.io/v1/convai/conversation/token?agent_id=$ELEVENLABS_AGENT_ID"
 
+          # "Have the credits run out?" is the first thing anyone asks when a
+          # call fails, and probe 1 could not answer it: the grep above keeps
+          # only status/message/detail, and the balance lives in other fields.
+          # Print it plainly. These are usage counters, not account secrets.
+          echo "4. How much quota is left?"
+          SUB=$(curl -sS -m 20 -H "xi-api-key: $ELEVENLABS_API_KEY" \
+            "https://api.elevenlabs.io/v1/user/subscription" || echo '{}')
+          echo "$SUB" | tr ',' '\n' \
+            | grep -oE '"(tier|character_count|character_limit|status|next_character_count_reset_unix)"[^,}]*' \
+            | sed 's/^/   /' || echo "   (could not read subscription)"
+
+          # 5 is the only probe that reproduces what the visitor's browser does,
+          # including our own rate limit — which returns 429 and looks, from the
+          # website, exactly like ElevenLabs being down.
+          echo "5. What the browser actually gets from our own endpoint:"
+          VOICE=$(curl -sS -m 20 -w '\nHTTP_CODE:%{http_code}' "https://${{ env.DOMAIN }}/api/voice/session" || echo "HTTP_CODE:000")
+          VCODE=${VOICE##*HTTP_CODE:}
+          # Never print the body: on success it contains a live conversation token.
+          echo "   /api/voice/session -> HTTP $VCODE"
+          case "$VCODE" in
+            200) echo "   -> the endpoint is working; a failing call is in the browser (mic permission, WebRTC)" ;;
+            429) echo "   -> RATE LIMITED by our own throttle, not by ElevenLabs. Wait 10 minutes." ;;
+            503) echo "   -> the server has no ELEVENLABS_* env vars; the button should be hidden" ;;
+            502) echo "   -> ElevenLabs refused. Probes 3 and 4 above say why." ;;
+          esac
+
           echo
           echo "Reading the result:"
           echo "  1 fails 401          -> the API key is wrong or revoked"
           echo "  1 ok, 2 fails 404    -> ELEVENLABS_AGENT_ID points at no agent"
-          echo "  1 ok, 2 fails 401    -> the key lacks the Conversational AI scope"
+          echo "  1 ok, 2 fails 401    -> the key lacks the ElevenAgents (convai) Write scope"
           echo "  1,2 ok, 3 fails      -> agent exists but cannot start a call (credits, or agent not published)"
+          echo "  4 shows count==limit -> the quota really is spent; top up or wait for the reset"
+          echo "  5 is 429             -> nothing is broken, the throttle just fired"
 
       - name: Verify Mini App session auth against production
         env:

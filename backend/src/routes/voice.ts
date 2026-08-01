@@ -24,12 +24,35 @@ function redactSecrets(text: string): string {
 }
 
 /**
+ * Boil the upstream refusal down to one word the browser can act on.
+ *
+ * Not for the patient — they get one apology either way. This is so that when
+ * the clinic says "the call is broken again", the answer is in front of them in
+ * the browser console instead of only in a server log they cannot reach. The
+ * distinction that matters most is "we ran out of credit" versus "something is
+ * misconfigured", because only one of those is fixed by paying.
+ */
+function classify(status: number, body: string): string {
+  const text = body.toLowerCase();
+  if (/quota|credit|exceed|insufficient|limit_reached/.test(text)) return 'QUOTA_EXHAUSTED';
+  if (/missing_permission|unauthor|invalid_api_key|forbidden/.test(text)) return 'KEY_REJECTED';
+  if (/not_found|does not exist/.test(text) || status === 404) return 'AGENT_NOT_FOUND';
+  if (status === 429) return 'UPSTREAM_RATE_LIMITED';
+  return `HTTP_${status}`;
+}
+
+/**
  * A call button on a public website is a metered expense: ElevenLabs bills per
  * minute, and nothing stops someone from clicking it in a loop. This is a crude
  * per-IP throttle — not a security control, just a cap on how fast a single
  * visitor can start billable conversations.
+ *
+ * The limit is per IP, and a clinic behind one office connection is a single
+ * IP: at five calls the staff testing the button would lock out real patients,
+ * and the website would show them the same "could not connect" as a genuine
+ * outage. Hence twelve, and hence the client telling 429 apart from failure.
  */
-const MAX_CALLS_PER_WINDOW = 5;
+const MAX_CALLS_PER_WINDOW = 12;
 const WINDOW_MS = 10 * 60 * 1000;
 const recentCalls = new Map<string, number[]>();
 
@@ -86,7 +109,7 @@ export default async function voiceRoutes(app: FastifyInstance) {
           'ElevenLabs refused to issue a conversation token',
         );
         reply.code(502);
-        return { error: 'VOICE_UPSTREAM_FAILED' };
+        return { error: 'VOICE_UPSTREAM_FAILED', reason: classify(res.status, detail) };
       }
 
       const data = (await res.json()) as { token?: string };

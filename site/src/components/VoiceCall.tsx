@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { api } from '@/lib/api';
+import { api, VoiceError } from '@/lib/api';
 import { PhoneIcon } from './icons';
+import { CLINIC } from '@/lib/content';
 
 /**
  * Voice conversation with the ElevenLabs agent.
@@ -20,6 +21,37 @@ import { PhoneIcon } from './icons';
  */
 
 type CallState = 'idle' | 'connecting' | 'live' | 'error';
+
+/**
+ * Turn a failure into something the patient can act on.
+ *
+ * Every cause used to produce the same sentence, which made the button
+ * indistinguishable from a broken one and left the clinic guessing whether they
+ * had run out of credit or misconfigured something. The patient still gets a
+ * short apology — but a different one per cause, and the real reason is written
+ * to the console for whoever is looking after the site.
+ */
+function explain(err: unknown): string {
+  if (err instanceof VoiceError) {
+    console.error(`[voice] ${err.status} ${err.reason}`);
+    if (err.status === 429) {
+      return 'Právě probíhá příliš mnoho hovorů. Zkuste to prosím za pár minut.';
+    }
+    // Out of credit is not something the patient can wait out, so send them
+    // to the phone number instead of inviting them to try again.
+    if (err.reason === 'QUOTA_EXHAUSTED') {
+      return `Hlasová asistentka je dočasně nedostupná. Zavolejte nám prosím na ${CLINIC.phone}.`;
+    }
+    return `Hovor se nepodařilo spojit. Zkuste to znovu, nebo nám zavolejte na ${CLINIC.phone}.`;
+  }
+
+  // Anything not from our API is the browser, and it is almost always the mic.
+  if (err instanceof Error && /permission|denied|NotAllowed/i.test(err.message)) {
+    return 'Povolte prosím mikrofon a zkuste to znovu.';
+  }
+  console.error('[voice]', err);
+  return `Hovor se nepodařilo spojit. Zkuste to znovu, nebo nám zavolejte na ${CLINIC.phone}.`;
+}
 
 interface Conversation {
   endSession: () => Promise<void>;
@@ -81,13 +113,7 @@ export default function VoiceCall() {
 
       conversationRef.current = conversation as unknown as Conversation;
     } catch (err) {
-      // Overwhelmingly this is the browser refusing microphone access.
-      const denied = err instanceof Error && /permission|denied|NotAllowed/i.test(err.message);
-      setError(
-        denied
-          ? 'Povolte prosím mikrofon a zkuste to znovu.'
-          : 'Hovor se nepodařilo spojit. Zkuste to znovu, nebo nám zavolejte.',
-      );
+      setError(explain(err));
       setState('error');
     }
   }
