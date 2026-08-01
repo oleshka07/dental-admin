@@ -38,7 +38,7 @@ export default function HomePage() {
           <div className="hero-copy">
             <h1>Zubní ordinace v Karlových Varech, kde se ošetření nebojíte</h1>
             <p className="lead">
-              {CLINIC.name} navazuje na praxi MDDr. Dmytra Galaktionova ze Sokolova. Stejný lékař,
+              {CLINIC.name} navazuje na praxi Dr. Dmytra Galaktionova ze Sokolova. Stejný lékař,
               stejná asistentka, stejný způsob práce. Jen v nové ordinaci v Rybářích.
             </p>
             <div className="hero-actions">
@@ -71,7 +71,7 @@ export default function HomePage() {
       <section className="section container">
         <h2 className="section-title">Proč k nám pacienti jezdí i ze Sokolova</h2>
         <p className="section-subtitle">
-          Vycházíme z toho, co na dosavadní péči MDDr. Galaktionova pacienti zmiňují nejčastěji.
+          Vycházíme z toho, co na dosavadní péči Dr. Galaktionova pacienti zmiňují nejčastěji.
         </p>
         <div className="card-grid cols-4">
           {REASONS.map(({ Icon, title, text }) => (

@@ -8,7 +8,7 @@ import { CLINIC } from '@/lib/content';
 
 export const metadata: Metadata = {
   title: `${CLINIC.name} — zubní ordinace Karlovy Vary`,
-  description: `Moderní zubní klinika ${CLINIC.name} v Karlových Varech. MDDr. Dmytro Galaktionov a tým — bezbolestné ošetření, rychlá protetika, online objednání.`,
+  description: `Moderní zubní klinika ${CLINIC.name} v Karlových Varech. Dr. Dmytro Galaktionov a tým — bezbolestné ošetření, rychlá protetika, online objednání.`,
 };
 
 // viewportFit: 'cover' lets safe-area-inset-* resolve on notched iPhones so

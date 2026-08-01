@@ -3,6 +3,39 @@
 Vše na straně serveru je hotové. Chybí jen agent, který se zakládá v dashboardu
 ElevenLabs (nelze ho vytvořit z tohoto repozitáře) a dva GitHub secrets.
 
+---
+
+## Де міняти тексти телефонного дзвінка (коротко)
+
+Тексти, які асистентка **промовляє в дзвінку**, лежать не в цьому репозиторії,
+а в дашборді ElevenLabs. Деплой їх не оновлює — їх треба перевставити руками.
+Тому після кожної зміни назви клініки, титулу лікаря, телефону чи годин цей
+крок обов'язковий, інакше сайт каже одне, а голос у слухавці — інше.
+
+**Куди йти:** elevenlabs.io → **Agents** → ваш агент → вкладка **Agent**.
+
+Там два поля, і міняти треба обидва:
+
+1. **First message** — перша фраза, яку чує пацієнт. Текст візьміть з розділу
+   «3. First message» нижче в цьому файлі.
+2. **System prompt** — усе інше: правила мови, факти про клініку, що агенту
+   можна й не можна казати. Текст візьміть з розділу «4. System prompt».
+
+**Як міняти:** виділіть увесь старий текст поля, видаліть, вставте новий блок
+цілком (не редагуйте по слову — так лишаються старі згадки в місцях, про які
+ви забудете). Далі **Save** вгорі праворуч.
+
+**Перевірка:** натисніть **Test AI agent** прямо в дашборді й послухайте перше
+речення. Якщо там стара назва або старий титул — ви не натиснули Save.
+
+**Що саме в промпті стосується лікаря:** рядок `- Lékař:` у блоці
+«Fakta, která smíš uvádět». Титул зараз **Dr.**, не MDDr.
+
+> Правило, яке варто тримати в голові: цей файл — джерело правди для тексту,
+> дашборд — лише його копія. Якщо правите формулювання, правте спершу тут,
+> потім копіюйте в ElevenLabs. Навпаки — і наступного разу ніхто не знатиме,
+> яка з версій справжня.
+
 ## 1. Vytvořit agenta
 
 ElevenLabs → **Agents** → **Create agent**.
@@ -125,7 +158,7 @@ Fakta, která smíš uvádět. Nic jiného si nevymýšlej:
 - Adresa: Dr. Přemysla Jeřábka 1093/13, Rybáře, 360 05 Karlovy Vary
 - Telefon: +420 352 308 111
 - Ordinační hodiny: Po–Čt 8:00–17:00, Pá 8:00–14:00, o víkendu zavřeno
-- Lékař: MDDr. Dmytro Galaktionov, člen České stomatologické komory
+- Lékař: Dr. Dmytro Galaktionov, člen České stomatologické komory
 - Pojišťovny: VZP, OZP, ZP MV ČR a další
 - Ze Sokolova je to zhruba 20 minut autem po silnici 6
 - Mluvíme česky, ukrajinsky a rusky

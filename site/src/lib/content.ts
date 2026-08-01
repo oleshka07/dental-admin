@@ -21,12 +21,12 @@ export const CLINIC = {
 };
 
 export const FOUNDER = {
-  name: 'MDDr. Dmytro Galaktionov',
+  name: 'Dr. Dmytro Galaktionov',
   title: 'Zakladatel a hlavní stomatolog',
   short:
     'Roky pracoval v ordinaci Léčebně preventivní zařízení s.r.o. v Sokolově. Velká část pacientů, které tam ošetřoval, za ním jezdí dodnes.',
   bio: [
-    `Většinu své dosavadní praxe strávil MDDr. Galaktionov v Sokolově, v ordinaci Léčebně
+    `Většinu své dosavadní praxe strávil Dr. Galaktionov v Sokolově, v ordinaci Léčebně
     preventivní zařízení s.r.o. Za tu dobu se kolem něj vytvořila pacientská základna, která
     ho následuje i po přestěhování do Karlových Varů. To o práci lékaře řekne víc než výčet
     kurzů.`,
@@ -53,7 +53,7 @@ export const FOUNDER = {
 export const TEAM = [
   {
     initials: 'DG',
-    name: 'MDDr. Dmytro Galaktionov',
+    name: 'Dr. Dmytro Galaktionov',
     role: 'Zakladatel, hlavní stomatolog',
     note: 'Praktická stomatologie, endodoncie, protetika a implantologie. Člen České stomatologické komory.',
   },
@@ -213,7 +213,7 @@ export const FAQ = [
 
 export const SOKOLOV_BRIDGE = {
   heading: 'Pro pacienty ze Sokolova',
-  text: `Pokud jste chodili k MDDr. Galaktionovovi do ordinace Léčebně preventivní zařízení
+  text: `Pokud jste chodili k Dr. Galaktionovovi do ordinace Léčebně preventivní zařízení
   s.r.o. v Sokolově, nic zásadního se pro vás nemění. Stejný lékař, stejná asistentka, stejný
   způsob práce — jen v nové ordinaci v Karlových Varech, zhruba dvacet minut jízdy.`,
   cta: 'Objednat se online',

@@ -19,7 +19,7 @@ const GREETINGS: Record<string, string> = {
   home: `Dobrý den! Jsem asistent kliniky ${CLINIC.name}. Mohu vám pomoct s objednáním nebo zodpovědět dotaz.`,
   services: 'Máte dotaz k nějakému výkonu, ceně nebo pojišťovně? Zeptejte se, ráda poradím.',
   about: 'Chcete se dozvědět víc o týmu nebo přístupu naší kliniky?',
-  founder: 'Zajímá vás zkušenost MDDr. Galaktionova? Zeptejte se.',
+  founder: 'Zajímá vás zkušenost Dr. Galaktionova? Zeptejte se.',
   contact: 'Potřebujete adresu, ordinační hodiny, nebo pomoct s cestou ze Sokolova?',
 };
 

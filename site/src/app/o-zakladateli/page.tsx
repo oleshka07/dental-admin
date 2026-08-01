@@ -2,7 +2,7 @@ import BookButton from '@/components/BookButton';
 import { CLINIC, FOUNDER } from '@/lib/content';
 
 export const metadata = {
-  title: `MDDr. Dmytro Galaktionov | ${CLINIC.name} Karlovy Vary`,
+  title: `Dr. Dmytro Galaktionov | ${CLINIC.name} Karlovy Vary`,
   description: `Zakladatel a hlavní stomatolog ${CLINIC.name}. Dlouholetá praxe v Sokolově, člen České stomatologické komory, gnatologie a implantologie.`,
 };
 
@@ -55,7 +55,7 @@ export default function FounderPage() {
       <div className="callout sokolov-callout">
         <div>
           <h2 className="section-title" style={{ marginBottom: 8 }}>
-            Objednat se k MDDr. Galaktionovovi
+            Objednat se k Dr. Galaktionovovi
           </h2>
           <p>
             Online kdykoli, telefonicky v ordinačních hodinách na{' '}

@@ -19,7 +19,7 @@ const CLINIC_FACTS = {
     CZ: 'VZP, OZP, ZP MV ČR a další — dle aktuálních smluv kliniky',
     UA: 'VZP, OZP, ZP MV ČR та інші — згідно з чинними договорами клініки',
   },
-  founder: 'MDDr. Dmytro Galaktionov, člen České stomatologické komory (ČSK)',
+  founder: 'Dr. Dmytro Galaktionov, člen České stomatologické komory (ČSK)',
 };
 
 function factsLang(language: string): 'CZ' | 'UA' {
@@ -30,7 +30,7 @@ const PAGE_HINTS: Record<string, string> = {
   home: 'Pacient je na úvodní stránce — pravděpodobně hledá obecné informace nebo se chce objednat.',
   services: 'Pacient je na stránce Služby a ceník — ptá se pravděpodobně na konkrétní zákrok, cenu nebo pojištění.',
   about: 'Pacient je na stránce O nás / tým — zajímá ho pravděpodobně lékař, jeho kvalifikace nebo přístup.',
-  founder: 'Pacient je na stránce o zakladateli MDDr. Galaktionovovi — zajímá ho jeho zkušenost a filozofie péče.',
+  founder: 'Pacient je na stránce o zakladateli Dr. Galaktionovovi — zajímá ho jeho zkušenost a filozofie péče.',
   contact: 'Pacient je na stránce Kontakty — hledá adresu, hodiny nebo chce vědět, jak se objednat ze Sokolova.',
 };
 

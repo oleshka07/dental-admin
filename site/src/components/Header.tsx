@@ -11,7 +11,7 @@ const NAV = [
   { href: '/', label: 'Domů' },
   { href: '/o-nas', label: 'O nás' },
   { href: '/sluzby-a-ceny', label: 'Služby a ceník' },
-  { href: '/o-zakladateli', label: 'MDDr. Galaktionov' },
+  { href: '/o-zakladateli', label: 'Dr. Galaktionov' },
   { href: '/kontakty', label: 'Kontakty' },
 ];
 
