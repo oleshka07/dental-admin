@@ -21,8 +21,31 @@ Settings → Secrets and variables → Actions → New repository secret:
 
 | Name | Hodnota |
 |---|---|
-| `ELEVENLABS_API_KEY` | klíč z ElevenLabs → Profile |
+| `ELEVENLABS_API_KEY` | klíč z ElevenLabs → Profile → API Keys |
 | `ELEVENLABS_AGENT_ID` | ID agenta z kroku 1 |
+
+### Oprávnění klíče — nejčastější příčina selhání
+
+Klíč potřebuje v **Edit API Key → Endpoints** položku **ElevenAgents**
+nastavenou na **Write**.
+
+To je ta samá věc, které API v chybové hlášce říká `convai_write` — produkt byl
+přejmenován na ElevenAgents, kód chyby zůstal starý, takže podle hlášky se
+v nastavení hledá marně. `Read` nestačí: vydání tokenu hovoru je *vytvoření*
+relace, ne čtení.
+
+Bez tohoto oprávnění vrátí `/api/voice/session` 502 a v prohlížeči se objeví
+„Hovor se nepodařilo spojit", přestože `/api/health` hlásí `voice: configured`
+— ten kontroluje jen to, že oba secrets nejsou prázdné, ne co klíč smí.
+
+Volitelně nastavte i **User → Access**. Pro hovor to potřeba není, ale
+diagnostický krok v CI tím ověřuje platnost samotného klíče; bez toho jeho
+první řádek hlásí 401, což vypadá poplašně a nic neznamená.
+
+Ostatní oprávnění (Text to Speech, Voices, …) hlasový agent nepotřebuje.
+
+> Volbu **Auto-disable if leaked** nechte zapnutou. Tento repozitář je veřejný;
+> klíč patří výhradně do GitHub Secrets a nikdy do souboru v repozitáři.
 
 Pak spusťte deploy (Actions → Deploy Galactic Dent → Run workflow).
 Ověření: `curl https://galactic.swipescape.eu/api/health` musí vrátit
