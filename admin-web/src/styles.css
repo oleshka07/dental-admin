@@ -172,3 +172,94 @@ th, td {
   font-size: 13px;
   color: #b91c1c;
 }
+
+/* ---- "Dnes" dashboard ----
+   The numbers carry the argument this system has to make: how much of the
+   booking traffic never reached a human. Keep them large and unadorned. */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.stat {
+  background: white;
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border-left: 4px solid #cbd2d9;
+}
+
+.stat-warn {
+  border-left-color: #f0ad4e;
+}
+
+.stat-good {
+  border-left-color: #43a047;
+}
+
+.stat-value {
+  display: block;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.stat-label {
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+  color: #5b6b78;
+}
+
+.stat-label small {
+  color: #8a97a3;
+}
+
+.section-heading {
+  font-size: 16px;
+  margin: 0 0 12px;
+}
+
+.row-actions {
+  display: flex;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.row-actions button {
+  padding: 5px 10px;
+  font-size: 12px;
+  border: 1px solid #cbd2d9;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+}
+
+.row-actions button:hover {
+  background: #eef2f5;
+}
+
+.badge-acute {
+  background: #fdd;
+  color: #b3261e;
+}
+
+@media (max-width: 900px) {
+  .stat-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.demo-banner {
+  background: #fff8e1;
+  border: 1px solid #f0d48a;
+  border-left: 4px solid #f0ad4e;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #6b5310;
+}
