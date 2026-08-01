@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { api } from '@/lib/api';
 import { useBooking } from './BookingContext';
+import VoiceCall from './VoiceCall';
 
 function pageKeyFor(pathname: string): 'home' | 'services' | 'about' | 'founder' | 'contact' {
   if (pathname.startsWith('/sluzby-a-ceny')) return 'services';
@@ -35,6 +36,7 @@ export default function AssistantWidget() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
+  const [voiceVisible, setVoiceVisible] = useState(true);
   const sessionId = useRef<string>('');
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -82,6 +84,7 @@ export default function AssistantWidget() {
       {open && (
         <div className="chat-panel">
           <div className="chat-header">Asistent Galactic Dent</div>
+          {voiceVisible && <VoiceCall onClose={() => setVoiceVisible(false)} />}
           <div className="chat-messages">
             {messages.map((m, i) => (
               <div key={i} className={`chat-message chat-${m.role}`}>

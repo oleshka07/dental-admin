@@ -1474,3 +1474,77 @@ table.price-table tr:last-child td {
   border: 1px solid var(--border);
   box-shadow: 0 18px 40px rgba(13, 58, 99, 0.16);
 }
+
+/* ---- Voice call bar (inside the chat widget) ----
+   Only rendered when the backend reports an ElevenLabs key AND agent id, so
+   the button never appears unless a call can actually be placed. */
+.voice-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(45, 212, 200, 0.08);
+  font-size: 13px;
+}
+
+.voice-start {
+  border: none;
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--navy), var(--teal));
+  color: white;
+}
+
+.voice-end {
+  margin-left: auto;
+  border: 1px solid var(--acute-red);
+  background: white;
+  color: var(--acute-red);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.voice-dismiss {
+  margin-left: auto;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.voice-status {
+  color: var(--navy-dark);
+  font-weight: 600;
+}
+
+.voice-error {
+  color: var(--acute-red);
+  font-size: 12px;
+}
+
+/* Pulses only while the agent is talking, so the caller can see the line is
+   live even before any audio comes through. */
+.voice-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--teal);
+  flex: 0 0 auto;
+}
+
+.voice-dot.speaking {
+  animation: voice-pulse 1s ease-in-out infinite;
+}
+
+@keyframes voice-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.5; }
+}

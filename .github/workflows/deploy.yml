@@ -123,6 +123,8 @@ jobs:
              ANTHROPIC_API_KEY='${{ secrets.ANTHROPIC_API_KEY }}' \
              ANTHROPIC_MODEL='${{ secrets.ANTHROPIC_MODEL }}' \
              STAFF_CHAT_ID='${{ secrets.STAFF_CHAT_ID }}' \
+             ELEVENLABS_API_KEY='${{ secrets.ELEVENLABS_API_KEY }}' \
+             ELEVENLABS_AGENT_ID='${{ secrets.ELEVENLABS_AGENT_ID }}' \
              bash /opt/galactic-dent/deploy/remote-deploy.sh"
 
       # Never runs on an ordinary push. Two deliberate triggers:

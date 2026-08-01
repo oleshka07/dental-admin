@@ -9,6 +9,7 @@ import appointmentsRoutes from './routes/appointments';
 import patientsRoutes from './routes/patients';
 import waitlistRoutes from './routes/waitlist';
 import assistantRoutes from './routes/assistant';
+import voiceRoutes from './routes/voice';
 import telegramAppRoutes from './routes/telegramApp';
 
 async function main() {
@@ -32,6 +33,10 @@ async function main() {
   const health = async () => ({
     status: 'ok',
     assistant: process.env.ANTHROPIC_API_KEY ? 'llm' : 'rule-based-fallback',
+    voice:
+      process.env.ELEVENLABS_API_KEY && process.env.ELEVENLABS_AGENT_ID
+        ? 'configured'
+        : 'not-configured',
   });
 
   app.get('/health', health);
@@ -47,6 +52,7 @@ async function main() {
   await app.register(patientsRoutes);
   await app.register(waitlistRoutes);
   await app.register(assistantRoutes);
+  await app.register(voiceRoutes);
   await app.register(telegramAppRoutes);
 
   const port = Number(process.env.PORT ?? 3000);

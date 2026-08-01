@@ -12,6 +12,7 @@
 #   LETSENCRYPT_EMAIL    contact email for the TLS certificate
 # Optional:
 #   ANTHROPIC_API_KEY, ANTHROPIC_MODEL, STAFF_CHAT_ID
+#   ELEVENLABS_API_KEY, ELEVENLABS_AGENT_ID  (voice calls from the website)
 
 set -euo pipefail
 
@@ -23,6 +24,8 @@ APP_ROOT=/opt/galactic-dent
 ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-}"
 ANTHROPIC_MODEL="${ANTHROPIC_MODEL:-claude-sonnet-5}"
 STAFF_CHAT_ID="${STAFF_CHAT_ID:-}"
+ELEVENLABS_API_KEY="${ELEVENLABS_API_KEY:-}"
+ELEVENLABS_AGENT_ID="${ELEVENLABS_AGENT_ID:-}"
 
 # The bot token is the HMAC key for Telegram Mini App signature checks, so a
 # stray space/newline picked up when the CI secret was pasted would silently
@@ -61,6 +64,8 @@ CORS_ORIGIN=https://${DOMAIN}
 TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
 ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
 ANTHROPIC_MODEL=${ANTHROPIC_MODEL}
+ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY}
+ELEVENLABS_AGENT_ID=${ELEVENLABS_AGENT_ID}
 EOF
 
 cat > "${APP_ROOT}/telegram-bot/.env" <<EOF

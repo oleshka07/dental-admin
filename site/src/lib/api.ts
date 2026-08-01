@@ -46,6 +46,17 @@ export interface AssistantResponse {
 }
 
 export const api = {
+  /** True only when the backend has both an ElevenLabs key and an agent id. */
+  voiceAvailable: async () => {
+    const res = await fetch(`${BASE_URL}/api/health`);
+    if (!res.ok) return false;
+    const data = (await res.json()) as { voice?: string };
+    return data.voice === 'configured';
+  },
+
+  /** Short-lived, single-conversation token. The API key stays on the server. */
+  voiceSession: () => request<{ conversationToken: string }>('/api/voice/session'),
+
   listVisitTypes: () => request<VisitType[]>('/api/visit-types'),
 
   getAvailability: (visitTypeId: string, from: string, to: string) =>
