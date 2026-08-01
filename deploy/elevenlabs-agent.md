@@ -77,13 +77,37 @@ V nastavení agenta → **Tools** → **Add tool** → typ **Webhook**.
 ### najdi_terminy
 
 - **Method**: `GET`
-- **URL**: `https://galactic.swipescape.eu/api/availability`
-- **Query parameters**:
-  - `visitTypeId` (string) — id typu návštěvy, viz `/api/visit-types`
-  - `from` (string) — datum od, ve tvaru `YYYY-MM-DD`
-  - `to` (string) — datum do, ve tvaru `YYYY-MM-DD`
-- **Description pro model**: „Vrátí volné termíny v zadaném rozmezí. Použij
-  vždy, než nabídneš pacientovi termín."
+- **URL**: `https://galactic.swipescape.eu/api/voice/slots`
+- **Query parameters** (všechny nepovinné):
+  - `sluzba` (string) — slovo, které řekl pacient: `prohlídka`, `plomba`,
+    `akutní`. Diakritika se ignoruje, stačí část názvu.
+  - `akutni` (string) — `true` u akutní bolesti; vrátí nejbližší akutní termíny
+    za sebou místo rozptylu přes týden.
+  - `dny` (string) — kolik dní dopředu hledat, výchozí 14, maximum 60.
+- **Description pro model**: „Vrátí volné termíny. Použij vždy, než pacientovi
+  nabídneš termín — nikdy termín nevymýšlej. Pole `popis` je věta, kterou máš
+  přečíst nahlas. Pole `visitTypeId`, `date`, `timeStart` a `timeEnd` předej
+  beze změny nástroji objednej. Pole `dnes` je dnešní datum — používej ho,
+  když chceš říct „zítra" nebo „příští týden"."
+
+Odpověď vypadá takto:
+
+```json
+{
+  "dnes": "2026-08-01",
+  "typNavstevy": { "id": "cmrz…", "nazev": "Preventivní prohlídka" },
+  "celkemVolnych": 56,
+  "volneTerminy": [
+    { "popis": "pondělí 3. srpna v 9:20", "visitTypeId": "cmrz…",
+      "date": "2026-08-03", "timeStart": "09:20", "timeEnd": "09:40" }
+  ]
+}
+```
+
+Proč vlastní endpoint a ne `/api/availability`: ten vrací všech 56 termínů,
+bere neprůhledné id typu návštěvy a nezná dnešní datum. Pro kalendář je
+správný, pro mluvící agenta nepoužitelný. Tenhle vrací nejvýš šest nabídek,
+každou z jiného dne, aby měl pacient z čeho vybírat.
 
 ### objednej
 

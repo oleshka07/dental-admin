@@ -10,6 +10,7 @@ import patientsRoutes from './routes/patients';
 import waitlistRoutes from './routes/waitlist';
 import assistantRoutes from './routes/assistant';
 import voiceRoutes from './routes/voice';
+import voiceSlotsRoutes from './routes/voiceSlots';
 import telegramAppRoutes from './routes/telegramApp';
 
 async function main() {
@@ -53,6 +54,7 @@ async function main() {
   await app.register(waitlistRoutes);
   await app.register(assistantRoutes);
   await app.register(voiceRoutes);
+  await app.register(voiceSlotsRoutes);
   await app.register(telegramAppRoutes);
 
   const port = Number(process.env.PORT ?? 3000);
