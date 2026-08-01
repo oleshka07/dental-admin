@@ -2,9 +2,14 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { api } from '@/lib/api';
+import { PhoneIcon } from './icons';
 
 /**
- * Voice conversation with the ElevenLabs agent, started from the chat widget.
+ * Voice conversation with the ElevenLabs agent.
+ *
+ * Sits as its own round button next to the chat bubble rather than inside the
+ * chat panel: "call us" has to be reachable in one click, not two, and a phone
+ * icon says what it does without being read.
  *
  * The browser never sees the ElevenLabs API key. It asks our backend for a
  * per-conversation token (`/api/voice/session`), which expires on its own, and
@@ -20,7 +25,7 @@ interface Conversation {
   endSession: () => Promise<void>;
 }
 
-export default function VoiceCall({ onClose }: { onClose: () => void }) {
+export default function VoiceCall() {
   /**
    * `null` while we are still asking the backend. The button stays hidden
    * until we know a call is actually possible — offering to call and then
@@ -43,8 +48,8 @@ export default function VoiceCall({ onClose }: { onClose: () => void }) {
     };
   }, []);
 
-  // A call must not outlive the widget: if the panel closes or the user
-  // navigates away mid-conversation, the session (and the billing) has to stop.
+  // A call must not outlive the page: if the visitor navigates away mid-call,
+  // the session — and the billing — has to stop.
   useEffect(() => {
     return () => {
       conversationRef.current?.endSession().catch(() => undefined);
@@ -80,8 +85,8 @@ export default function VoiceCall({ onClose }: { onClose: () => void }) {
       const denied = err instanceof Error && /permission|denied|NotAllowed/i.test(err.message);
       setError(
         denied
-          ? 'Bez přístupu k mikrofonu hovor nespustíme. Povolte mikrofon v prohlížeči a zkuste to znovu.'
-          : 'Hovor se nepodařilo spojit. Zkuste to prosím znovu, nebo nám zavolejte.',
+          ? 'Povolte prosím mikrofon a zkuste to znovu.'
+          : 'Hovor se nepodařilo spojit. Zkuste to znovu, nebo nám zavolejte.',
       );
       setState('error');
     }
@@ -96,29 +101,26 @@ export default function VoiceCall({ onClose }: { onClose: () => void }) {
 
   if (available !== true) return null;
 
-  if (state === 'live' || state === 'connecting') {
+  if (state === 'connecting' || state === 'live') {
     return (
-      <div className="voice-bar voice-bar-live">
+      <div className="voice-live" role="status">
         <span className={`voice-dot ${agentSpeaking ? 'speaking' : ''}`} aria-hidden="true" />
         <span className="voice-status">
           {state === 'connecting' ? 'Spojuji…' : agentSpeaking ? 'Asistentka mluví' : 'Posloucháme vás'}
         </span>
         <button className="voice-end" onClick={endCall}>
-          Ukončit hovor
+          Zavěsit
         </button>
       </div>
     );
   }
 
   return (
-    <div className="voice-bar">
-      <button className="voice-start" onClick={startCall}>
-        Zavolat asistentce
+    <>
+      <button className="voice-bubble" onClick={startCall} aria-label="Zavolat asistentce">
+        <PhoneIcon size={24} />
       </button>
-      {state === 'error' && <span className="voice-error">{error}</span>}
-      <button className="voice-dismiss" onClick={onClose} aria-label="Skrýt">
-        ✕
-      </button>
-    </div>
+      {state === 'error' && <div className="voice-error-toast">{error}</div>}
+    </>
   );
 }

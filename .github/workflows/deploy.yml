@@ -179,6 +179,13 @@ jobs:
           CODE=${HTML##*HTTP_CODE:}
           echo "homepage -> $CODE"
           [ "$CODE" = "200" ] || { echo "Homepage is not serving 200."; exit 1; }
+          # Report which integrations actually have credentials on the server.
+          # A missing key is invisible from outside — the chat silently falls
+          # back to canned replies and the call button just never renders — so
+          # this is the only place it becomes obvious.
+          echo "--- integrations ---"
+          curl -sS "https://${{ env.DOMAIN }}/api/health"
+          echo
           for NEEDLE in 'tel:+420352308111' 'Jak probíhá první návštěva'; do
             case "$HTML" in
               *"$NEEDLE"*) echo "found: $NEEDLE" ;;

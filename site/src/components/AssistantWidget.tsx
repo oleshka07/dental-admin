@@ -36,7 +36,6 @@ export default function AssistantWidget() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
-  const [voiceVisible, setVoiceVisible] = useState(true);
   const sessionId = useRef<string>('');
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -77,6 +76,8 @@ export default function AssistantWidget() {
 
   return (
     <>
+      <VoiceCall />
+
       <button className="chat-bubble" onClick={() => setOpen((v) => !v)} aria-label="Otevřít asistenta">
         {open ? '✕' : '💬'}
       </button>
@@ -84,7 +85,6 @@ export default function AssistantWidget() {
       {open && (
         <div className="chat-panel">
           <div className="chat-header">Asistent Galactic Dent</div>
-          {voiceVisible && <VoiceCall onClose={() => setVoiceVisible(false)} />}
           <div className="chat-messages">
             {messages.map((m, i) => (
               <div key={i} className={`chat-message chat-${m.role}`}>
