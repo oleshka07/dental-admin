@@ -6,7 +6,8 @@ import { prisma } from '../db';
 // this here (not invented by the LLM) is what makes the "never hallucinate
 // clinic facts" guardrail actually enforceable.
 const CLINIC_FACTS = {
-  name: 'Galactic Dent',
+  name: 'GalaClinic',
+  legalName: 'GalaClinic s.r.o.',
   address: 'Dr. Přemysla Jeřábka 1093/13, Rybáře, 360 05 Karlovy Vary',
   ico: '23647124',
   hours: {

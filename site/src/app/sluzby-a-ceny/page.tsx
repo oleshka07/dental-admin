@@ -2,9 +2,8 @@ import BookButton from '@/components/BookButton';
 import { CLINIC, SERVICES, PRICING } from '@/lib/content';
 
 export const metadata = {
-  title: 'Služby a orientační ceník | Galactic Dent Karlovy Vary',
-  description:
-    'Přehled zubních výkonů, co hradí pojišťovna a kde se doplácí. Orientační ceník zubní ordinace Galactic Dent v Karlových Varech.',
+  title: `Služby a orientační ceník | ${CLINIC.name} Karlovy Vary`,
+  description: `Přehled zubních výkonů, co hradí pojišťovna a kde se doplácí. Orientační ceník zubní ordinace ${CLINIC.name} v Karlových Varech.`,
 };
 
 function priceLabel(priceFrom: number | null, note?: string) {

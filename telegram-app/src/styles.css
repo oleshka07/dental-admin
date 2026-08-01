@@ -41,12 +41,12 @@ body {
   margin-bottom: 20px;
 }
 
-/* logo.png is 1408×768 — a wide image. Forcing it into a 36×36 square squashed
-   the artwork; fix the width and let the height follow the real ratio. */
+/* The Mini App gets the symbol alone (512×512), not the full lockup: the
+   clinic name is already spelled out in the <h1> right next to it, and a
+   76px-wide wordmark beside it was both unreadable and redundant. */
 .app-header img {
-  width: 76px;
-  height: auto;
-  border-radius: 8px;
+  width: 40px;
+  height: 40px;
 }
 
 .app-header h1 {

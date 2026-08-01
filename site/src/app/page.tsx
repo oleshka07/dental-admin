@@ -38,7 +38,7 @@ export default function HomePage() {
           <div className="hero-copy">
             <h1>Zubní ordinace v Karlových Varech, kde se ošetření nebojíte</h1>
             <p className="lead">
-              Galactic Dent navazuje na praxi MDDr. Dmytra Galaktionova ze Sokolova. Stejný lékař,
+              {CLINIC.name} navazuje na praxi MDDr. Dmytra Galaktionova ze Sokolova. Stejný lékař,
               stejná asistentka, stejný způsob práce. Jen v nové ordinaci v Rybářích.
             </p>
             <div className="hero-actions">

@@ -1,5 +1,5 @@
 [Unit]
-Description=Galactic Dent backend API
+Description=GalaClinic backend API
 After=network.target postgresql.service
 
 [Service]

@@ -12,7 +12,7 @@ export default function App() {
 
   return (
     <div className="app">
-      <h1>Zubní ordinace — administrace</h1>
+      <h1>GalaClinic — administrace</h1>
       <div className="tabs">
         <button className={tab === 'today' ? 'active' : ''} onClick={() => setTab('today')}>
           Dnes

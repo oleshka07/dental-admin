@@ -1,4 +1,4 @@
-# Galactic Dent — booking system + website (MVP)
+# GalaClinic — booking system + website (MVP)
 
 Реалізація з `Dental_Clinic_CRM_Specification_v2.md`: backend + rule engine,
 Telegram-бот, admin-панель, і публічний сайт клініки з вбудованим віджетом
@@ -18,7 +18,7 @@ telegram-bot/  Telegraf-бот для пацієнтів (CZ/UA), виклика
 telegram-app/  Telegram Mini App (Vite+React) — повний функціонал booking-
                 віджету нативно всередині Telegram
 admin-web/     React-адмінка для лікаря/асистента (календар, шаблони, записи)
-site/          Next.js сайт клініки Galactic Dent — контент + віджет
+site/          Next.js сайт клініки GalaClinic — контент + віджет
                 бронювання + AI-чат на всіх сторінках
 ```
 
@@ -177,7 +177,7 @@ DEMO_TELEGRAM_ID=123456789 npm run demo:seed
 
 **Запуск на сервері.** Два способи, обидва — явні:
 
-* GitHub Actions → workflow «Deploy Galactic Dent» → *Run workflow*, і в полі
+* GitHub Actions → workflow «Deploy GalaClinic» → *Run workflow*, і в полі
   `demo_data` вибрати `seed` або `purge` (за потреби заповнити
   `demo_telegram_id`);
 * або маркер у повідомленні коміту: `[demo-seed]` / `[demo-purge]`. Це той
@@ -211,7 +211,7 @@ Telegram ID не потрібно класти в цей публічний ре
 * **Admin-панель**: тижневий календар з кольорами статусів і вільними
   слотами, закриття слоту в один клік, конструктор шаблонів розкладу,
   список записів з фільтрами за статусом/типом/датою.
-* **Сайт Galactic Dent** (`site/`): 5 сторінок (Domů, O nás, Služby a ceník,
+* **Сайт GalaClinic** (`site/`): 5 сторінок (Domů, O nás, Služby a ceník,
   MDDr. Galaktionov, Kontakty) з реальним контентом клініки, брендингом за
   логотипом і Sokolov-bridge блоком для колишніх пацієнтів.
 * **Booking-віджет на сайті**: модальне вікно, доступне з будь-якої сторінки

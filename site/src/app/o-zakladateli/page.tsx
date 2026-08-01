@@ -2,9 +2,8 @@ import BookButton from '@/components/BookButton';
 import { CLINIC, FOUNDER } from '@/lib/content';
 
 export const metadata = {
-  title: 'MDDr. Dmytro Galaktionov | Galactic Dent Karlovy Vary',
-  description:
-    'Zakladatel a hlavní stomatolog Galactic Dent. Dlouholetá praxe v Sokolově, člen České stomatologické komory, gnatologie a implantologie.',
+  title: `MDDr. Dmytro Galaktionov | ${CLINIC.name} Karlovy Vary`,
+  description: `Zakladatel a hlavní stomatolog ${CLINIC.name}. Dlouholetá praxe v Sokolově, člen České stomatologické komory, gnatologie a implantologie.`,
 };
 
 export default function FounderPage() {

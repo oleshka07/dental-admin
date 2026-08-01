@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { api } from '@/lib/api';
 import { useBooking } from './BookingContext';
 import VoiceCall from './VoiceCall';
+import { CLINIC } from '@/lib/content';
 
 function pageKeyFor(pathname: string): 'home' | 'services' | 'about' | 'founder' | 'contact' {
   if (pathname.startsWith('/sluzby-a-ceny')) return 'services';
@@ -15,7 +16,7 @@ function pageKeyFor(pathname: string): 'home' | 'services' | 'about' | 'founder'
 }
 
 const GREETINGS: Record<string, string> = {
-  home: 'Dobrý den! Jsem asistent kliniky Galactic Dent. Mohu vám pomoct s objednáním nebo zodpovědět dotaz.',
+  home: `Dobrý den! Jsem asistent kliniky ${CLINIC.name}. Mohu vám pomoct s objednáním nebo zodpovědět dotaz.`,
   services: 'Máte dotaz k nějakému výkonu, ceně nebo pojišťovně? Zeptejte se, ráda poradím.',
   about: 'Chcete se dozvědět víc o týmu nebo přístupu naší kliniky?',
   founder: 'Zajímá vás zkušenost MDDr. Galaktionova? Zeptejte se.',
@@ -84,7 +85,7 @@ export default function AssistantWidget() {
 
       {open && (
         <div className="chat-panel">
-          <div className="chat-header">Asistent Galactic Dent</div>
+          <div className="chat-header">Asistent {CLINIC.name}</div>
           <div className="chat-messages">
             {messages.map((m, i) => (
               <div key={i} className={`chat-message chat-${m.role}`}>

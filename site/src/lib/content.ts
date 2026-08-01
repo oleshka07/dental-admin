@@ -1,6 +1,9 @@
 export const CLINIC = {
-  name: 'Galactic Dent',
-  legalName: 'GalaClinic, s.r.o.',
+  // The one place the clinic's display name is written down. Everything else
+  // — page titles, the logo's alt text, the assistant's greeting — reads it
+  // from here, so a rebrand is this line and the logo artwork, nothing more.
+  name: 'GalaClinic',
+  legalName: 'GalaClinic s.r.o.',
   ico: '23647124',
   address: 'Dr. Přemysla Jeřábka 1093/13, Rybáře, 360 05 Karlovy Vary',
   addressShort: 'Dr. Přemysla Jeřábka 1093/13, Karlovy Vary',

@@ -2,9 +2,8 @@ import BookButton from '@/components/BookButton';
 import { CLINIC, TEAM, FOUNDER, FIRST_VISIT } from '@/lib/content';
 
 export const metadata = {
-  title: 'O nás a náš tým | Galactic Dent Karlovy Vary',
-  description:
-    'Kdo je za Galactic Dent, jak pracujeme a co čekat od první návštěvy. Zubní ordinace v Karlových Varech — Rybářích.',
+  title: `O nás a náš tým | ${CLINIC.name} Karlovy Vary`,
+  description: `Kdo je za ${CLINIC.name}, jak pracujeme a co čekat od první návštěvy. Zubní ordinace v Karlových Varech — Rybářích.`,
 };
 
 export default function AboutPage() {

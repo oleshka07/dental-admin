@@ -69,15 +69,17 @@ h1, h2, h3 {
 .logo-link {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-weight: 800;
-  font-size: 18px;
+  gap: 9px;
   color: var(--navy-dark);
   white-space: nowrap;
 }
 
-.logo-img {
-  border-radius: 8px;
+/* Tracked out to echo the wordmark in the logo artwork, which is set in
+   Montserrat with the same open letter-spacing. */
+.logo-word {
+  font-weight: 700;
+  font-size: 19px;
+  letter-spacing: 0.01em;
 }
 
 .main-nav {

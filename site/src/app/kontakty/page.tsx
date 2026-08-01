@@ -3,9 +3,8 @@ import { MapPinIcon, ClockIcon, PhoneIcon } from '@/components/icons';
 import { CLINIC, SOKOLOV_BRIDGE } from '@/lib/content';
 
 export const metadata = {
-  title: 'Kontakty a ordinační hodiny | Galactic Dent Karlovy Vary',
-  description:
-    'Adresa, ordinační hodiny a telefon zubní ordinace Galactic Dent, Dr. Přemysla Jeřábka 1093/13, Karlovy Vary — Rybáře.',
+  title: `Kontakty a ordinační hodiny | ${CLINIC.name} Karlovy Vary`,
+  description: `Adresa, ordinační hodiny a telefon zubní ordinace ${CLINIC.name}, ${CLINIC.addressShort} — Rybáře.`,
 };
 
 export default function ContactPage() {

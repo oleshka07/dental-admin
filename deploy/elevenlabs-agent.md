@@ -86,7 +86,7 @@ Ostatní oprávnění (Text to Speech, Voices, …) hlasový agent nepotřebuje.
 > Volbu **Auto-disable if leaked** nechte zapnutou. Tento repozitář je veřejný;
 > klíč patří výhradně do GitHub Secrets a nikdy do souboru v repozitáři.
 
-Pak spusťte deploy (Actions → Deploy Galactic Dent → Run workflow).
+Pak spusťte deploy (Actions → Deploy GalaClinic → Run workflow).
 Ověření: `curl https://galactic.swipescape.eu/api/health` musí vrátit
 `"voice":"configured"`. Dokud tam je `not-configured`, tlačítko hovoru se na
 webu vůbec nezobrazí.
@@ -94,13 +94,17 @@ webu vůbec nezobrazí.
 ## 3. First message
 
 ```
-Dobrý den, tady asistentka kliniky Galactic Dent. Co pro vás mohu udělat?
+Dobrý den, tady asistentka kliniky GalaClinic. Co pro vás mohu udělat?
 ```
 
 ## 4. System prompt
 
+> Цей промпт живе в дашборді ElevenLabs, не в репозиторії. Після перейменування
+> клініки на GalaClinic його треба перевставити вручну — інакше агент і далі
+> вітатиметься старою назвою.
+
 ```
-Jsi hlasová asistentka zubní kliniky Galactic Dent v Karlových Varech.
+Jsi hlasová asistentka zubní kliniky GalaClinic v Karlových Varech.
 Mluvíš s pacientem telefonicky, takže odpovídej krátce — dvě až tři věty.
 
 JAZYK — nejdůležitější pravidlo hovoru:

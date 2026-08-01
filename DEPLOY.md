@@ -36,7 +36,7 @@ secret. Потрібні:
 | `DEPLOY_SSH_KEY` | приватний ключ (весь блок нижче, разом з `BEGIN`/`END`) |
 | `DEPLOY_HOST` | `178.105.185.67` |
 | `DEPLOY_USER` | `root` |
-| `TELEGRAM_BOT_TOKEN` | токен @Galactic_dent_bot від @BotFather |
+| `TELEGRAM_BOT_TOKEN` | токен @Galactic_dent_bot від @BotFather (юзернейм бота — стара назва; змінити його можна лише в @BotFather) |
 | `POSTGRES_PASSWORD` | будь-який новий надійний пароль для БД (сам його вигадай, ніде більше не використовується) |
 | `LETSENCRYPT_EMAIL` | твій email — для сповіщень Let's Encrypt про сертифікат |
 | `ANTHROPIC_API_KEY` | опційно — якщо не задаси, асистент працює на rule-based fallback |
@@ -58,7 +58,7 @@ secret. Потрібні:
 ## Крок 4: запусти деплой
 
 Досить будь-якого пуску в `claude/dental-booking-service-aorx3i` — або
-запусти вручну: GitHub → Actions → "Deploy Galactic Dent" → Run workflow.
+запусти вручну: GitHub → Actions → "Deploy GalaClinic" → Run workflow.
 
 Перший прогін триває довше (ставить Node/Postgres/nginx/certbot з нуля,
 видає TLS-сертифікат) — стеж за логом у вкладці Actions. Наступні пуші вже

@@ -4,11 +4,11 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import MobileTabBar from '@/components/MobileTabBar';
 import Providers from '@/components/Providers';
+import { CLINIC } from '@/lib/content';
 
 export const metadata: Metadata = {
-  title: 'Galactic Dent — zubní ordinace Karlovy Vary',
-  description:
-    'Moderní zubní klinika Galactic Dent v Karlových Varech. MDDr. Dmytro Galaktionov a tým — bezbolestné ošetření, rychlá protetika, online objednání.',
+  title: `${CLINIC.name} — zubní ordinace Karlovy Vary`,
+  description: `Moderní zubní klinika ${CLINIC.name} v Karlových Varech. MDDr. Dmytro Galaktionov a tým — bezbolestné ošetření, rychlá protetika, online objednání.`,
 };
 
 // viewportFit: 'cover' lets safe-area-inset-* resolve on notched iPhones so

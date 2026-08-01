@@ -1,4 +1,5 @@
 import { Patient } from '../lib/api';
+import { CLINIC_NAME } from '../lib/clinic';
 import { Screen } from '../types';
 
 export default function HomeScreen({ patient, onNavigate }: { patient: Patient | null; onNavigate: (s: Screen) => void }) {
@@ -6,7 +7,7 @@ export default function HomeScreen({ patient, onNavigate }: { patient: Patient |
     <div className="screen">
       <div className="app-header">
         <img src={`${import.meta.env.BASE_URL}logo.png`} alt="" />
-        <h1>Galactic Dent</h1>
+        <h1>{CLINIC_NAME}</h1>
       </div>
       <h2 className="screen-title">Ahoj{patient ? `, ${patient.fullName.split(' ')[0]}` : ''} 👋</h2>
       <p className="screen-subtitle">Co pro vás můžeme udělat?</p>

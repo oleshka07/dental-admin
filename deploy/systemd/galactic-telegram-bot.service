@@ -1,5 +1,5 @@
 [Unit]
-Description=Galactic Dent Telegram bot
+Description=GalaClinic Telegram bot
 After=network.target galactic-backend.service
 
 [Service]

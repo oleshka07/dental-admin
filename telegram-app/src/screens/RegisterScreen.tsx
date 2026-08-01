@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMainButton } from '../telegram/hooks';
 import { api, Patient } from '../lib/api';
+import { CLINIC_NAME } from '../lib/clinic';
 import { TelegramUser } from '../telegram/webapp';
 
 export default function RegisterScreen({
@@ -42,7 +43,7 @@ export default function RegisterScreen({
     <div className="screen">
       <div className="app-header">
         <img src={`${import.meta.env.BASE_URL}logo.png`} alt="" />
-        <h1>Galactic Dent</h1>
+        <h1>{CLINIC_NAME}</h1>
       </div>
       <h2 className="screen-title">Vítejte 👋</h2>
       <p className="screen-subtitle">Než se budete moct objednat, potřebujeme vaše jméno a telefon.</p>

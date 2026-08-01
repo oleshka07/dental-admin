@@ -21,11 +21,12 @@ export default function Header() {
   return (
     <header className="site-header">
       <div className="site-header-inner">
-        {/* The logo artwork already contains the wordmark, so a separate
-            "Galactic Dent" text next to it just repeated itself. */}
+        {/* Symbol plus the name in live text. The full lockup shrunk to header
+            height put the wordmark at a few pixels tall — there, but unreadable. */}
         <Link href="/" className="logo-link" onClick={() => setMenuOpen(false)}>
-          <ClinicLogo width={96} className="logo-img" />
-          <span className="sr-only">Galactic Dent — domů</span>
+          <ClinicLogo width={38} variant="mark" className="logo-img" />
+          <span className="logo-word">{CLINIC.name}</span>
+          <span className="sr-only">— domů</span>
         </Link>
 
         <nav className={`main-nav ${menuOpen ? 'open' : ''}`}>
