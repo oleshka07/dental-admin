@@ -98,14 +98,26 @@ export default function VoiceCall() {
       const conversation = await ConversationSdk.startSession({
         conversationToken,
         connectionType: 'webrtc',
-        onConnect: () => setState('live'),
+        /**
+         * The lifecycle is logged because the two failures that look identical
+         * on screen need telling apart: never connecting (token, network,
+         * microphone) versus connecting and dropping immediately (the agent
+         * itself — no voice configured, or out of credit mid-call). Without
+         * the timestamps there is no way to know which one happened.
+         */
+        onConnect: () => {
+          console.info('[voice] connected');
+          setState('live');
+        },
         onDisconnect: () => {
+          console.info('[voice] disconnected');
           setState('idle');
           setAgentSpeaking(false);
           conversationRef.current = null;
         },
         onModeChange: ({ mode }) => setAgentSpeaking(mode === 'speaking'),
         onError: (message) => {
+          console.error('[voice] sdk error:', message);
           setError(message);
           setState('error');
         },
