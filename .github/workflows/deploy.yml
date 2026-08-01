@@ -186,11 +186,19 @@ jobs:
           echo "--- integrations ---"
           curl -sS "https://${{ env.DOMAIN }}/api/health"
           echo
-          for NEEDLE in 'tel:+420352308111' 'Jak probíhá první návštěva'; do
+          for NEEDLE in 'tel:+420352308111' 'Jak probíhá první návštěva' 'GalaClinic'; do
             case "$HTML" in
               *"$NEEDLE"*) echo "found: $NEEDLE" ;;
               *) echo "MISSING from the served page: $NEEDLE — the server is running an older build."; exit 1 ;;
             esac
+          done
+          # Assert the artwork landed too. The HTML above is only the markup —
+          # a half-finished rsync can serve a renamed page next to the previous
+          # logo, and nothing in the strings above would notice.
+          for ASSET in /logo.png /logo-mark.png /icon.png; do
+            ACODE=$(curl -sS -o /dev/null -w '%{http_code}' "https://${{ env.DOMAIN }}${ASSET}")
+            echo "$ASSET -> $ACODE"
+            [ "$ACODE" = "200" ] || { echo "$ASSET is not being served."; exit 1; }
           done
 
       # End-to-end guard against the exact regression that broke the Mini App:
