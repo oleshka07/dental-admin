@@ -20,25 +20,64 @@ import { toDateOnly } from '../utils/time';
  * date so the agent can say "tomorrow" without guessing.
  */
 
-const DAY_NAMES = ['neděle', 'pondělí', 'úterý', 'středa', 'čtvrtek', 'pátek', 'sobota'];
-const MONTHS_GENITIVE = [
-  'ledna', 'února', 'března', 'dubna', 'května', 'června',
-  'července', 'srpna', 'září', 'října', 'listopadu', 'prosince',
-];
+/**
+ * Spoken date parts per language.
+ *
+ * The agent switches language mid-call, and a Ukrainian-speaking patient must
+ * hear "понеділок 3 серпня", not "pondělí 3. srpna". Asking the model to
+ * translate these on the fly is the single worst place to rely on it: a
+ * mistranslated weekday or month is a patient who arrives on the wrong day.
+ * Return the phrase already in the right language and there is nothing to get
+ * wrong.
+ */
+type SpokenLang = 'cs' | 'uk' | 'ru';
+
+const DATE_WORDS: Record<SpokenLang, { days: string[]; months: string[]; at: string; dayOrdinalDot: boolean }> = {
+  cs: {
+    days: ['neděle', 'pondělí', 'úterý', 'středa', 'čtvrtek', 'pátek', 'sobota'],
+    months: ['ledna', 'února', 'března', 'dubna', 'května', 'června',
+             'července', 'srpna', 'září', 'října', 'listopadu', 'prosince'],
+    at: 'v',
+    dayOrdinalDot: true,
+  },
+  uk: {
+    days: ['неділя', 'понеділок', 'вівторок', 'середа', 'четвер', 'пʼятниця', 'субота'],
+    months: ['січня', 'лютого', 'березня', 'квітня', 'травня', 'червня',
+             'липня', 'серпня', 'вересня', 'жовтня', 'листопада', 'грудня'],
+    at: 'о',
+    dayOrdinalDot: false,
+  },
+  ru: {
+    days: ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'],
+    months: ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+             'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'],
+    at: 'в',
+    dayOrdinalDot: false,
+  },
+};
+
+function parseLang(raw: string | undefined): SpokenLang {
+  const value = (raw ?? '').trim().toLowerCase();
+  if (value.startsWith('uk') || value === 'ua') return 'uk';
+  if (value.startsWith('ru')) return 'ru';
+  return 'cs';
+}
 
 /** Lowercase and strip diacritics, so "Akutní" matches "akutni". */
 function normalise(value: string): string {
   return value
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '');
+    .replace(/[\u0300-\u036f]/g, '');
 }
 
-/** "pondělí 3. srpna v 9:20" — what the agent should actually say. */
-function describe(date: Date, timeStart: string): string {
-  const day = DAY_NAMES[date.getUTCDay()];
+/** "pondělí 3. srpna v 9:20" / "понеділок 3 серпня о 9:20". */
+function describe(date: Date, timeStart: string, lang: SpokenLang): string {
+  const w = DATE_WORDS[lang];
+  const day = w.days[date.getUTCDay()];
+  const dayNumber = `${date.getUTCDate()}${w.dayOrdinalDot ? '.' : ''}`;
   const spokenTime = timeStart.replace(/^0/, '');
-  return `${day} ${date.getUTCDate()}. ${MONTHS_GENITIVE[date.getUTCMonth()]} v ${spokenTime}`;
+  return `${day} ${dayNumber} ${w.months[date.getUTCMonth()]} ${w.at} ${spokenTime}`;
 }
 
 const MAX_OFFERS = 6;
@@ -47,7 +86,8 @@ const MAX_DAYS = 60;
 
 export default async function voiceSlotsRoutes(app: FastifyInstance) {
   app.get('/api/voice/slots', async (req) => {
-    const query = req.query as { sluzba?: string; dny?: string; akutni?: string };
+    const query = req.query as { sluzba?: string; dny?: string; akutni?: string; jazyk?: string };
+    const lang = parseLang(query.jazyk);
     const wanted = query.sluzba?.trim();
     const acuteOnly = query.akutni === 'true' || query.akutni === '1';
 
@@ -58,7 +98,7 @@ export default async function voiceSlotsRoutes(app: FastifyInstance) {
 
     const visitTypes = await prisma.visitType.findMany({ where: { active: true } });
     if (visitTypes.length === 0) {
-      return { dnes: toDateOnly(new Date()).toISOString().slice(0, 10), volneTerminy: [], celkemVolnych: 0 };
+      return { dnes: toDateOnly(new Date()).toISOString().slice(0, 10), jazyk: lang, volneTerminy: [], celkemVolnych: 0 };
     }
 
     // Match on a word the caller would actually say, not on an id.
@@ -96,11 +136,12 @@ export default async function voiceSlotsRoutes(app: FastifyInstance) {
 
     return {
       dnes: from.toISOString().slice(0, 10),
+      jazyk: lang,
       typNavstevy: { id: chosen.id, nazev: chosen.name },
       celkemVolnych: bookable.length,
       volneTerminy: offered.slice(0, MAX_OFFERS).map((s) => ({
         // Phrased for speech…
-        popis: describe(new Date(`${s.date}T00:00:00Z`), s.timeStart),
+        popis: describe(new Date(`${s.date}T00:00:00Z`), s.timeStart, lang),
         // …and the exact fields the booking call needs, so the agent can pass
         // them straight through without reformatting anything.
         visitTypeId: chosen!.id,

@@ -7,13 +7,52 @@ ElevenLabs (nelze ho vytvořit z tohoto repozitáře) a dva GitHub secrets.
 
 ElevenLabs → **Agents** → **Create agent**.
 
-- **Language**: Czech (v nastavení agenta přidejte i Ukrainian jako additional
-  language, pokud chcete obsluhovat ukrajinské pacienty)
-- **Voice**: vyberte český ženský hlas — agent zastupuje asistentku ordinace
+- **Language**: Czech
+- **Additional languages**: Ukrainian a Russian (viz kapitolu o přepínání jazyka)
+- **Voice**: viz kapitolu „Jak zbavit hlas robotičnosti" níže — na tom záleží
+  nejvíc
 - **First message**: viz níže
 - **System prompt**: viz níže
 
 Po uložení zkopírujte **Agent ID** z adresního řádku nebo z detailu agenta.
+
+## 1b. Jak zbavit hlas robotičnosti
+
+V pořadí podle toho, co má největší dopad:
+
+**1. Hlas.** Tohle rozhoduje víc než všechno ostatní dohromady. Většina hlasů
+v knihovně je natrénovaná na angličtině a česky nebo ukrajinsky zní ploše
+a s přízvukem. V **Voice Library** filtrujte podle jazyka (Czech) a hlas si
+poslechněte přímo na české větě, ne na ukázce, kterou nabízí knihovna.
+
+**2. Model.** V nastavení agenta → **Voice** → **Model**:
+
+| Model | Latence | Kvalita |
+|---|---|---|
+| **Flash v2.5** | ~75 ms | nižší emoční hloubka — typicky ten „robotický" pocit |
+| **Multilingual v2** | vyšší | výrazně živější, emočně bohatší |
+| **v3** | nejvyšší | nejexpresivnější |
+
+Nové agenty ElevenLabs zakládá na Flash, protože je nejrychlejší a nejlevnější.
+Pokud hlas zní stroze, tohle je první věc ke změně. Turbo v2.5 už nenabízejte —
+byl vyřazen a nahrazen Flash modely.
+
+Kompromis je reálný: Multilingual v2 zní líp, ale pauza mezi otázkou
+a odpovědí povyroste. U ordinace, kde pacient nikam nespěchá, se to obvykle
+vyplatí; ověřte si to poslechem, ne úvahou.
+
+**3. Nastavení hlasu.** Výchozí hodnoty bývají příliš „stabilní", což je jiné
+slovo pro monotónní:
+
+| Parametr | Doporučeno | Proč |
+|---|---|---|
+| Stability | **0,40–0,50** | vyšší hodnoty potlačí intonaci a zplošťují projev |
+| Similarity | **0,70–0,80** | drží charakter hlasu; nad 0,9 začíná zkreslovat |
+| Speed | **0,95–1,05** | mimo tento rozsah zní řeč nepřirozeně |
+| Style | **0** | u rozhovoru přidává artefakty, ne výraz |
+
+Měňte po jednom parametru a pokaždé si zavolejte. Dva změněné naráz už
+nerozliší, který pomohl.
 
 ## 2. Přidat dva GitHub secrets
 
@@ -63,7 +102,20 @@ Dobrý den, tady asistentka kliniky Galactic Dent. Co pro vás mohu udělat?
 ```
 Jsi hlasová asistentka zubní kliniky Galactic Dent v Karlových Varech.
 Mluvíš s pacientem telefonicky, takže odpovídej krátce — dvě až tři věty.
-Mluv jazykem, kterým mluví pacient (čeština, ukrajinština nebo ruština).
+
+JAZYK — nejdůležitější pravidlo hovoru:
+- Hovor začínáš česky.
+- Jakmile pacient promluví ukrajinsky nebo rusky, zeptej se JEDNOU, v jeho
+  jazyce, jestli mu tak bude příjemnější. Například: „Вам буде зручніше
+  українською?"
+- Když potvrdí, mluv od té chvíle už jen tímto jazykem až do konce hovoru.
+  Nepřepínej zpátky do češtiny, ani když si nejsi jistý, ani když ti nástroj
+  vrátí české údaje.
+- Údaje z nástrojů (názvy služeb, poznámky) mohou přijít česky. Přečti je
+  pacientovi v jeho jazyce. Nikdy nemíchej dva jazyky v jedné větě.
+- Nástroji najdi_terminy vždy předej parametr `jazyk` podle toho, jak právě
+  mluvíš: `cs`, `uk` nebo `ru`. Termíny pak přijdou rovnou správně vyslovené
+  a ty je jen přečteš.
 
 Fakta, která smíš uvádět. Nic jiného si nevymýšlej:
 - Adresa: Dr. Přemysla Jeřábka 1093/13, Rybáře, 360 05 Karlovy Vary
@@ -93,6 +145,33 @@ Pravidla, která nesmíš porušit:
 - Nikdy neslibuj termín, který ti nevrátil nástroj najdi_terminy.
 ```
 
+## 4b. Přepínání jazyka během hovoru
+
+Samotný system prompt nestačí — agent umí mluvit jen jazyky, které má povolené,
+a přepnout hlas umí jen se zapnutým systémovým nástrojem.
+
+**1. Povolte jazyky.** Nastavení agenta → **Additional languages** → přidejte
+Ukrainian a Russian. (Volba **All** zapne 31 jazyků; pro ordinaci v Karlových
+Varech stačí tyhle tři.)
+
+**2. Zapněte nástroj.** Nastavení agenta → **Tools** → **System tools** →
+**Language detection**. Není zapnutý automaticky. Bez něj agent české odpovědi
+nepřepne, i kdyby v promptu stálo cokoli.
+
+Nástroj se spustí ve dvou případech: když pacient promluví jiným povoleným
+jazykem, nebo když o změnu jazyka výslovně požádá.
+
+**3. Popis nástroje.** Ten jde přepsat. Doplňte, aby se agent nejdřív zeptal
+místo tichého přepnutí:
+
+```
+Přepne jazyk hovoru. Než přepneš, zeptej se pacienta jednou v jeho jazyce,
+jestli mu tak bude příjemnější. Po přepnutí už zpátky nepřepínej.
+```
+
+Bez toho agent jazyk mění potichu a při každé české větě může skočit zpátky —
+což je přesně to poskakování, které je slyšet.
+
 ## 5. Nástroje (tools) — volitelné, ale bez nich agent neumí objednat
 
 V nastavení agenta → **Tools** → **Add tool** → typ **Webhook**.
@@ -107,6 +186,8 @@ V nastavení agenta → **Tools** → **Add tool** → typ **Webhook**.
   - `akutni` (string) — `true` u akutní bolesti; vrátí nejbližší akutní termíny
     za sebou místo rozptylu přes týden.
   - `dny` (string) — kolik dní dopředu hledat, výchozí 14, maximum 60.
+  - `jazyk` (string) — `cs`, `uk` nebo `ru` podle toho, jakým jazykem právě
+    mluvíte. Pole `popis` se vrátí rovnou v tomto jazyce.
 - **Description pro model**: „Vrátí volné termíny. Použij vždy, než pacientovi
   nabídneš termín — nikdy termín nevymýšlej. Pole `popis` je věta, kterou máš
   přečíst nahlas. Pole `visitTypeId`, `date`, `timeStart` a `timeEnd` předej
@@ -118,14 +199,20 @@ Odpověď vypadá takto:
 ```json
 {
   "dnes": "2026-08-01",
+  "jazyk": "uk",
   "typNavstevy": { "id": "cmrz…", "nazev": "Preventivní prohlídka" },
   "celkemVolnych": 56,
   "volneTerminy": [
-    { "popis": "pondělí 3. srpna v 9:20", "visitTypeId": "cmrz…",
+    { "popis": "понеділок 3 серпня о 9:20", "visitTypeId": "cmrz…",
       "date": "2026-08-03", "timeStart": "09:20", "timeEnd": "09:40" }
   ]
 }
 ```
+
+Datum a čas se vracejí přeložené schválně. Překládat „pondělí 3. srpna" za
+běhu je ze všech míst v hovoru to nejhorší, kde se spolehnout na model:
+zpřeházený den nebo měsíc znamená pacienta, který přijde jiný den. Takhle
+není co zkazit.
 
 Proč vlastní endpoint a ne `/api/availability`: ten vrací všech 56 termínů,
 bere neprůhledné id typu návštěvy a nezná dnešní datum. Pro kalendář je
