@@ -9,8 +9,11 @@ const CLINIC_FACTS = {
   name: 'Galactic Dent',
   address: 'Dr. Přemysla Jeřábka 1093/13, Rybáře, 360 05 Karlovy Vary',
   ico: '23647124',
-  hours: { CZ: 'Po–Čt 8:00–17:00, Pá 8:00–14:00', UA: 'Пн–Чт 8:00–17:00, Пт 8:00–14:00' },
-  phone: '+420 XXX XXX XXX',
+  hours: {
+    CZ: 'Po–Čt 8:00–17:00, Pá 8:00–14:00, o víkendu zavřeno',
+    UA: 'Пн–Чт 8:00–17:00, Пт 8:00–14:00, у вихідні зачинено',
+  },
+  phone: '+420 352 308 111',
   insurance: {
     CZ: 'VZP, OZP, ZP MV ČR a další — dle aktuálních smluv kliniky',
     UA: 'VZP, OZP, ZP MV ČR та інші — згідно з чинними договорами клініки',

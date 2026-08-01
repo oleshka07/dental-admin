@@ -25,10 +25,19 @@ async function main() {
   const corsOrigin = process.env.CORS_ORIGIN?.split(',').map((o) => o.trim()) ?? true;
   await app.register(cors, { origin: corsOrigin });
 
-  app.get('/health', async () => ({ status: 'ok' }));
+  // `assistant` reports whether ANTHROPIC_API_KEY reached the process. Without
+  // it the chat still answers, but from the canned rule-based replies — which
+  // looks identical from outside, so there would otherwise be no way to tell a
+  // configured key from a missing one short of reading the replies.
+  const health = async () => ({
+    status: 'ok',
+    assistant: process.env.ANTHROPIC_API_KEY ? 'llm' : 'rule-based-fallback',
+  });
+
+  app.get('/health', health);
   // nginx proxies /api/ verbatim to this backend, so the externally-visible
   // health check needs to exist at this exact path too, not just /health.
-  app.get('/api/health', async () => ({ status: 'ok' }));
+  app.get('/api/health', health);
 
   await app.register(visitTypesRoutes);
   await app.register(slotTemplatesRoutes);
